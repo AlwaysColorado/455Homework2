@@ -61,8 +61,24 @@ public class Server {
 
 
     private static readConnectionMessage(){
+        ByteBuffer readBuffer = ByteBuffer.allocate(256); // allocate buffer size 
+        clientSocket = (SocketChannel) key.channel(); // get the channel key
+        int bytesReadSoFar = clientSocket.readBuffer(readBuffer); // number of bytes read / reading from it 
 
-    }
+        switch (bytesReadSoFar){
+            case -1:
+                clientSocket.close(); // deals with error and closes the clientSocket 
+                System.out.println("Closing clientSocket"); // message
+                break;
+            default: 
+                String message = new String(readBuffer.array());
+                // add to batch
+                
+                // can flip the buffer here and write if needed. I was thinking another method but it might be simple to do here.  
+                readBuffer.clear(); // clear buffer 
+    
+        }
+
 
     public static void main(String[] args) throws IOException{
         Server server = new Server();
