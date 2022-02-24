@@ -43,7 +43,7 @@ public class Server {
                         registerConnection();
                         break;
                     case key.isReadable():
-                        // read previously connected socket for message
+                        readConnectionMessage();
                         break;
                     default:
                         System.out.println("Key is not readable or acceptable");
@@ -76,7 +76,7 @@ public class Server {
                 
                 // can flip the buffer here and write if needed. I was thinking another method but it might be simple to do here.  
                 readBuffer.clear(); // clear buffer 
-    
+                break; 
         }
 
 
