@@ -9,17 +9,19 @@ import java.nio.channels.SocketChannel;
 import java.nio.channels.Selector;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.Random;
+import java.nio.ByteBuffer;
 
 public class Server {
 
-    private  ServerSocketChannel serverSocket;
+    private ServerSocketChannel serverSocket;
     private SocketChannel clientSocket;
     private boolean stillWaiting = true;
     private Selector selector;
 
     // empty constructor currently
     public Server(){
-
+        
     }
 
     private void openServerChannel(int pn) throws IOException{
@@ -34,40 +36,42 @@ public class Server {
     private void waitForConnections() throws IOException{
         while(stillWaiting){
             System.out.println("Waiting for connections");
+            selector.select();
             if ( selector.selectNow() == 0 ) continue;
                 Iterator<SelectionKey> iter = selector.selectedKeys().iterator();
                 while ( iter.hasNext() ) {
-                SelectionKey key = iter.next();
-                switch (key){
-                    case key.isAcceptable(): 
+                    SelectionKey key = iter.next();
+                    if (key.isAcceptable()){
                         registerConnection();
-                        break;
-                    case key.isReadable():
-                        readConnectionMessage();
-                        break;
-                    default:
+                    }
+                    else if (key.isReadable()){
+                        readConnectionMessage(key);
+                    }
+                    else{                       
                         System.out.println("Key is not readable or acceptable");
-                }
-                iter.remove();
-                }
-    }
+                    }
+                                        }
+                    iter.remove();
+                            }
+        }
+    
 
-    private static void registerConnection() throws IOException{
-        clientSocket.accept();
+    private void registerConnection() throws IOException{
+        clientSocket = serverSocket.accept();
         clientSocket.configureBlocking(false);
-        client.register(selector, SelectionKey.OP_READ);
+        clientSocket.register(selector, SelectionKey.OP_READ);
         System.out.println("A new connection has registered");
     }
 
 
-    private static readConnectionMessage(){
+    private static void readConnectionMessage(SelectionKey key) throws IOException{
         ByteBuffer readBuffer = ByteBuffer.allocate(256); // allocate buffer size 
-        clientSocket = (SocketChannel) key.channel(); // get the channel key
-        int bytesReadSoFar = clientSocket.readBuffer(readBuffer); // number of bytes read / reading from it 
+        SocketChannel clientSocketX = (SocketChannel) key.channel(); // get the channel key
+        int bytesReadSoFar = clientSocketX.read(readBuffer); // number of bytes read / reading from it 
 
         switch (bytesReadSoFar){
             case -1:
-                clientSocket.close(); // deals with error and closes the clientSocket 
+                clientSocketX.close(); // deals with error and closes the clientSocket 
                 System.out.println("Closing clientSocket"); // message
                 break;
             default: 
@@ -78,11 +82,23 @@ public class Server {
                 readBuffer.clear(); // clear buffer 
                 break; 
         }
+    }
+
+    private byte[] generateRandomByteMessage(){
+        Random random = new Random();
+        byte[] byteMessage = new byte[8000];
+        random.nextBytes(byteMessage);
+        return byteMessage;
+    }
 
 
     public static void main(String[] args) throws IOException{
         Server server = new Server();
         server.openServerChannel(Integer.parseInt(args[0])); // args 0 for current test will change to 1 most likely with build gradle
+        byte[] test = server.generateRandomByteMessage();
+        System.out.println(test); // quick test to check output 
+        System.out.println(test.length); // quick test to check length - make sure it is 8k
+        server.waitForConnections();
     }
 
 }
