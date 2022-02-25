@@ -84,14 +84,6 @@ public class Server {
         }
     }
 
-    private byte[] generateRandomByteMessage(){
-        Random random = new Random();
-        byte[] byteMessage = new byte[8000];
-        random.nextBytes(byteMessage);
-        return byteMessage;
-    }
-
-
     public static void main(String[] args) throws IOException{
         Server server = new Server();
         server.openServerChannel(Integer.parseInt(args[0])); // args 0 for current test will change to 1 most likely with build gradle
