@@ -15,7 +15,7 @@ public class ThreadPoolManager{
 
     // create new Threadpool object 
 
-    ThreadPool threadPool = new ThreadPool(threadPoolSize); // this will keep pullling tasks and completing them
+    //ThreadPool threadPool = new ThreadPool(threadPoolSize); // this will keep pullling tasks and completing them
 
     // tasks to handle: 
 
