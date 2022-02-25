@@ -5,16 +5,16 @@ import java.util.Queue;
 
 public class BlockingQueue<T> {
     private Queue<T> queue = new LinkedList<T>();
-    private int batchSize;
+    private int queueSize;
     private int empty = 0;
 
-    public BlockingQueue(int bs){
-        this.batchSize = bs;
+    public BlockingQueue(int qs){
+        this.queueSize = qs;
     }
 
     public synchronized void add(T task) throws InterruptedError{
         // when the queue is full we should wait
-        while(this.queue.size() == this.batchSize){
+        while(this.queue.size() == this.queueSize){
             wait();
         }
         // if the queue is empty lets notify
@@ -31,7 +31,7 @@ public class BlockingQueue<T> {
             wait();
         }
         // if the queue is full we should notify 
-        if (this.queue.size() == this.batchSize){
+        if (this.queue.size() == this.queueSize){
             notifyAll();
         }
         // otherwise remove and return the task
