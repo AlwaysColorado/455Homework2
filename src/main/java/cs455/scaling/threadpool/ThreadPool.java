@@ -19,26 +19,39 @@ public class ThreadPool{
 
     }
 
+    public void executeThreadPool(Runnable task){
+        synchronized (blockingQueue){
+            blockingQueue.add(task);
+            blockingQueue.notify();
+        }
+    }
+
     public void killThreads(){
         // I think this needs an interrupt or something maybe someone else will know the answer. 
     }
 
 
     private class WorkerPool extends Thread{
-    
+        private Runnable task;
         public void run(){
             while(true){
-                Runnable task = blockingQueue.take(); // this will remove a task from the list, take is useful as it waits for non empty.
-                try{
-                    executorTask.run(); // run the task 
-                    System.out.println("Thread has finised its task"); // message for testing can be removed later
-                }
-                catch (RuntimeException e){
-                    System.out.println("There was a problem with running the task");
-                }
+                synchronized (blockingQueue){                
+                    try{
+                        task = blockingQueue.take(); // this will remove a task from the list, take is useful as it waits for non empty.
+                        } catch (InterruptedException e){
+                            System.out.println("Interrupted Exception " + e);
+                        }
+                        try{
+                            task.run(); // run the task 
+                            System.out.println("Thread has finised its task"); // message for testing can be removed later
+                        }
+                        catch (RuntimeException e){
+                            System.out.println("There was a problem with running the task");
+                        }
             }
         }
 
     }
 
+}
 }
