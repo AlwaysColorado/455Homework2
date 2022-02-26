@@ -12,9 +12,11 @@ public class ThreadPoolManager implements Runnable{
     private int batchTime;
     private Timer timer;
 
-    public void ThreadPoolManager(){
+    public ThreadPoolManager(){
     }
 
+
+    // basically all tasks should be called from this run method, i.e. register client, read client message
     public void run(){
         Random r = new Random();
         int number = r.nextInt();
@@ -22,41 +24,18 @@ public class ThreadPoolManager implements Runnable{
     }
 
 
-    // create new Threadpool object 
-
-    //ThreadPool threadPool = new ThreadPool(threadPoolSize); // this will keep pullling tasks and completing them
-
-    // tasks to handle: 
-
-    // Client registering 
-
-    // Reading incoming data from a client 
-
-    // Batch has reached batch-size -- get worker thread to do something 
-
-    // Batch has expired batch-time -- get worker thread to do something 
-
-
-
-
-
-    // public Timer(){
-    //     timer = new Timer();
-    //     timer.schedule(new batchToRun(), batchTime)
-    // }
-
-    // class batchToRun() extends TimerTask{
-    //     public void run(){
-            
-    //     }
-    // }
-
-
     public static void main(String[] args){
+//      int portNum = Integer.parseInt(args[1]);
+//      int threadPoolSize = Integer.parseInt(args[2]);
+//      int batchSize = Integer.parseInt(args[3]);
+//      int batchTime = Integer.parseInt(args[4]);
         ThreadPool tp = new ThreadPool(10);
+        System.out.println("ThreadPool Created");
         for (int i=0; i<15; i++){
             ThreadPoolManager tpm = new ThreadPoolManager();
+            System.out.println("New Task");
             tp.executeThreadPool(tpm);
+            tp.killThreads();
         }
     }
 
