@@ -52,10 +52,10 @@ public class ThreadPool{
                         try{
                             assert task != null;
                             task.run(); // run the task
-                            System.out.println("Thread has finished its task"); // message for testing can be removed later
+                            System.out.println("ThreadPool: Thread has finished its task"); // message for testing can be removed later
                         }
                         catch (RuntimeException e){
-                            System.out.println("There was a problem with running the task");
+                            System.out.println("ThreadPool: There was a problem with running the task");
                         }
             }
         }

@@ -2,15 +2,16 @@ package cs455.scaling.server;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.net.ServerSocket;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.Selector;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Set;
-import java.util.Random;
+import cs455.scaling.util.Hashing;
 import java.nio.ByteBuffer;
+import java.util.List;
 
 public class Server {
 
@@ -18,10 +19,18 @@ public class Server {
     private SocketChannel clientSocket;
     private boolean stillWaiting = true;
     private Selector selector;
+    private static final Hashing hashDevice = new Hashing();
+    private static List<byte[]> batches;
+    private final int batchSize;
+    private int threadPoolSize;
+    private int batchTime;
 
     // empty constructor currently
-    public Server(){
-        
+    public Server(int portNum, int bs, int bt, int tps) throws IOException {
+        openServerChannel(portNum);
+        this.batchSize = bs;
+        this.threadPoolSize = tps;
+        this.batchTime = bt;
     }
 
     private void openServerChannel(int pn) throws IOException{
@@ -33,7 +42,7 @@ public class Server {
         serverSocket.register(selector, SelectionKey.OP_ACCEPT ); // register selector
     }
 
-    private void waitForConnections() throws IOException{
+    private void waitForConnections() throws IOException, NoSuchAlgorithmException {
         while(stillWaiting){
             System.out.println("Waiting for connections");
             selector.select();
@@ -47,12 +56,15 @@ public class Server {
                     else if (key.isReadable()){
                         readConnectionMessage(key);
                     }
+                    else if(key.isWritable()){
+                        writeConnectionMessage(key, batches, batchSize);
+                    }
                     else{                       
                         System.out.println("Key is not readable or acceptable");
                     }
-                                        }
+                }
                     iter.remove();
-                            }
+            }
         }
     
 
@@ -64,32 +76,47 @@ public class Server {
     }
 
 
-    private static void readConnectionMessage(SelectionKey key) throws IOException{
+    private static void readConnectionMessage(SelectionKey key) throws IOException {
         ByteBuffer readBuffer = ByteBuffer.allocate(256); // allocate buffer size 
-        SocketChannel clientSocketX = (SocketChannel) key.channel(); // get the channel key
-        int bytesReadSoFar = clientSocketX.read(readBuffer); // number of bytes read / reading from it 
+        SocketChannel clientSocketR = (SocketChannel) key.channel(); // get the channel key
+        int bytesReadSoFar = clientSocketR.read(readBuffer); // number of bytes read / reading from it
 
-        switch (bytesReadSoFar){
-            case -1:
-                clientSocketX.close(); // deals with error and closes the clientSocket 
-                System.out.println("Closing clientSocket"); // message
-                break;
-            default: 
-                String message = new String(readBuffer.array());
-                // add to batch
-                
-                // can flip the buffer here and write if needed. I was thinking another method but it might be simple to do here.  
-                readBuffer.clear(); // clear buffer 
-                break; 
+        if (bytesReadSoFar == -1) {
+            clientSocketR.close(); // deals with error and closes the clientSocket
+            System.out.println("Closing clientSocket"); // message
+        } else {
+            String message = new String(readBuffer.array());
+            byte[] packet = message.getBytes();
+            // add hashed_bytes to batches
+            batches = new ArrayList<>(1);
+            batches.add(packet);
+            readBuffer.clear();
         }
     }
 
-    public static void main(String[] args) throws IOException{
-        Server server = new Server();
-        server.openServerChannel(Integer.parseInt(args[0])); // args 0 for current test will change to 1 most likely with build gradle
-        //byte[] test = server.generateRandomByteMessage();
-        //System.out.println(test); // quick test to check output
-        //System.out.println(test.length); // quick test to check length - make sure it is 8k
+    private static void writeConnectionMessage(SelectionKey key, List<byte[]> batches, int batchSize) throws IOException {
+        ByteBuffer writeBuffer = ByteBuffer.allocate(256); // allocate buffer size
+        SocketChannel clientSocketW = (SocketChannel) key.channel(); // get the channel key
+        List<byte[]> batch = splitIntoBatches(batches, batchSize);
+        for (byte[] bytes : batch) {
+            writeBuffer.put(bytes);
+            clientSocketW.write(writeBuffer);
+            writeBuffer.clear();
+        }
+    }
+
+    private static List<byte[]> splitIntoBatches(List<byte[]> batches, int batchSize){
+        List<byte[]> batch = new ArrayList<>(batchSize);
+        if (batches.size() == batchSize){
+            for (int i=0; i<batchSize; i++){
+                batch.set(i, batches.get(i));
+            }
+        }
+        return batch;
+    }
+
+    public static void main(String[] args) throws IOException, NoSuchAlgorithmException {
+        Server server = new Server(Integer.parseInt(args[0]), Integer.parseInt(args[1]), Integer.parseInt(args[2]), Integer.parseInt(args[3]));
         server.waitForConnections();
     }
 
