@@ -16,17 +16,18 @@ public class Client {
     private static SocketChannel clientSocket;
     private static ByteBuffer buffer;
 
-    public Client(){
+    public Client() throws IOException {
         try {
             // connect to the server
             clientSocket = SocketChannel.open(new InetSocketAddress("localhost", 9900)); //local host will be changed later
             buffer = ByteBuffer.allocate(256);
         } catch(IOException e){
             System.out.println("Problem with allocating buffer or clientSocket will not open");
+            clientSocket.close();
         }
     }
 
-    private void sendMessageAndCheckResponse() throws NoSuchAlgorithmException {
+    private void sendMessageAndCheckResponse() throws NoSuchAlgorithmException, IOException {
         byte[] message = generateRandomByteMessage();
         hashRandomByteMessages(message); // add it to the list (hashed)
         buffer = ByteBuffer.wrap(message); // add it to buffer
@@ -42,6 +43,7 @@ public class Client {
             }
         } catch (IOException e) {
             e.printStackTrace();
+            clientSocket.close();
         }
     }
 
@@ -69,10 +71,12 @@ public class Client {
         }
     }
 
-    public static void main(String[] args) throws NoSuchAlgorithmException {
+    public static void main(String[] args) throws NoSuchAlgorithmException, IOException {
         for (int i=0; i<100; i++) {
             Client client = new Client();
             client.sendMessageAndCheckResponse();
         }
+
+
     }
 }
