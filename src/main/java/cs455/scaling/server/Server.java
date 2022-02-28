@@ -87,9 +87,9 @@ public class Server {
     public static void main(String[] args) throws IOException{
         Server server = new Server();
         server.openServerChannel(Integer.parseInt(args[0])); // args 0 for current test will change to 1 most likely with build gradle
-        byte[] test = server.generateRandomByteMessage();
-        System.out.println(test); // quick test to check output 
-        System.out.println(test.length); // quick test to check length - make sure it is 8k
+        //byte[] test = server.generateRandomByteMessage();
+        //System.out.println(test); // quick test to check output
+        //System.out.println(test.length); // quick test to check length - make sure it is 8k
         server.waitForConnections();
     }
 
