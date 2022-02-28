@@ -8,13 +8,13 @@ public class ThreadPool{
     // instantiate blockingQueue 
     private final BlockingQueue<Runnable> blockingQueue;
     private final WorkerPool[] workers;
-    private AtomicBoolean isKillThreads;
+    private AtomicBoolean isKillThreads = new AtomicBoolean(false);
 
-    public ThreadPool(int threadPoolSize){
+    public ThreadPool(int threadPoolSize) {
         // create new blockingQueue
         blockingQueue = new LinkedBlockingQueue<>(); // new BlockingQueue that is unbounded.
         workers = new WorkerPool[threadPoolSize]; // set the workerPool with threadpool size
-        isKillThreads = new AtomicBoolean(false); // set killthreads method to false
+        //this.isKillThreads = new AtomicBoolean(false); // set kill-threads method to false
         // this needs to be edited because currently all workers can go, but we want to limit when workers can go
         for(int i=0; i<threadPoolSize; i++){
             workers[i] = new WorkerPool();
@@ -39,7 +39,7 @@ public class ThreadPool{
     private class WorkerPool extends Thread{
         private Runnable task;
         public void run(){
-            while(true){
+            while(!isKillThreads.get()){
                 synchronized (blockingQueue){
                     while (blockingQueue.size() == 0){
                         try{
@@ -51,11 +51,12 @@ public class ThreadPool{
                         task = blockingQueue.poll();
                         try{
                             assert task != null;
+                            System.out.println("ThreadPool: Thread starting");
                             task.run(); // run the task
-                            System.out.println("Thread has finished its task"); // message for testing can be removed later
+                            System.out.println("ThreadPool: Thread has finished its task"); // message for testing can be removed later
                         }
                         catch (RuntimeException e){
-                            System.out.println("There was a problem with running the task");
+                            System.out.println("ThreadPool: There was a problem with running the task" + e);
                         }
             }
         }
