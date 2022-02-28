@@ -9,25 +9,29 @@ import java.nio.channels.Selector;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Iterator;
+
+import cs455.scaling.threadpool.ThreadPool;
 import cs455.scaling.util.Hashing;
 import java.nio.ByteBuffer;
 import java.util.List;
 
-public class Server {
+public class Server implements Runnable {
 
     private ServerSocketChannel serverSocket;
     private SocketChannel clientSocket;
     private boolean stillWaiting = true;
+    private boolean stillRunning = true;
     private Selector selector;
     private static final Hashing hashDevice = new Hashing();
     private static List<byte[]> batches;
     private final int batchSize;
-    private int threadPoolSize;
-    private int batchTime;
+    private final int threadPoolSize;
+    private final int batchTime;
+    private final int portNum;
 
     // empty constructor currently
-    public Server(int portNum, int bs, int bt, int tps) throws IOException {
-        openServerChannel(portNum);
+    public Server(int pn, int bs, int bt, int tps) throws IOException {
+        this.portNum = pn;
         this.batchSize = bs;
         this.threadPoolSize = tps;
         this.batchTime = bt;
@@ -94,12 +98,14 @@ public class Server {
         }
     }
 
-    private static void writeConnectionMessage(SelectionKey key, List<byte[]> batches, int batchSize) throws IOException {
+    private static void writeConnectionMessage(SelectionKey key, List<byte[]> batches, int batchSize) throws IOException, NoSuchAlgorithmException {
         ByteBuffer writeBuffer = ByteBuffer.allocate(256); // allocate buffer size
         SocketChannel clientSocketW = (SocketChannel) key.channel(); // get the channel key
         List<byte[]> batch = splitIntoBatches(batches, batchSize);
-        for (byte[] bytes : batch) {
-            writeBuffer.put(bytes);
+        for (int i=0; i<batchSize; i++) {
+            String hashed_message = hashDevice.SHA1FromBytes(batch.get(i));
+            byte[] hashed_bytes = hashed_message.getBytes();
+            writeBuffer.put(hashed_bytes);
             clientSocketW.write(writeBuffer);
             writeBuffer.clear();
         }
@@ -115,9 +121,34 @@ public class Server {
         return batch;
     }
 
-    public static void main(String[] args) throws IOException, NoSuchAlgorithmException {
-        Server server = new Server(Integer.parseInt(args[0]), Integer.parseInt(args[1]), Integer.parseInt(args[2]), Integer.parseInt(args[3]));
-        server.waitForConnections();
+    @Override
+    public void run() {
+        try {
+            waitForConnections();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
     }
+
+
+    public static void main(String[] args) throws IOException, NoSuchAlgorithmException, InterruptedException {
+        int pn = Integer.parseInt(args[0]);
+        int bs = Integer.parseInt(args[1]);
+        int bt = Integer.parseInt(args[2]);
+        int tps = Integer.parseInt(args[3]);
+        Server server = new Server(pn, bs, bt, tps);
+        server.openServerChannel(pn);
+        ThreadPool tp = new ThreadPool(tps);
+        while(server.stillRunning){
+            tp.executeThreadPool(server);
+            if (!server.stillRunning){
+                tp.killThreads();
+            }
+        }
+
+    }
+
 
 }
