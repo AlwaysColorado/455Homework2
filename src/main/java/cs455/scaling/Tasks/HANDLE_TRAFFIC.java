@@ -4,7 +4,7 @@ public class HANDLE_TRAFFIC extends Task{
     //TODO: add relevant instance variables
 
     //TODO: Add variables necessary for this task to do its job.
-    public HANDLE_TRAFFIC(TaskType taskType) {
+    public HANDLE_TRAFFIC() {
         super(TaskType.HANDLE_TRAFFIC);
     }
 

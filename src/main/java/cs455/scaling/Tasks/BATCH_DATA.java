@@ -4,7 +4,7 @@ public class BATCH_DATA extends Task{
     //TODO: Instance variables here
 
     //TODO: Add variables necessary for this task to do its job.
-    public BATCH_DATA(TaskType taskType) {
+    public BATCH_DATA() {
         super(TaskType.BATCH_DATA);
     }
 
