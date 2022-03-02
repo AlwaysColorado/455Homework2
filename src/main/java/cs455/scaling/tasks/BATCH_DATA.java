@@ -1,4 +1,4 @@
-package cs455.scaling.Tasks;
+package cs455.scaling.tasks;
 
 public class BATCH_DATA extends Task{
     //TODO: Instance variables here

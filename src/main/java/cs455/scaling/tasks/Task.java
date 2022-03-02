@@ -1,4 +1,4 @@
-package cs455.scaling.Tasks;
+package cs455.scaling.tasks;
 
 //Describes a task to be carried out by a worker thread
 public abstract class Task {

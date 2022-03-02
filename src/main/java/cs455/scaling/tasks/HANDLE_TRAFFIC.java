@@ -1,4 +1,4 @@
-package cs455.scaling.Tasks;
+package cs455.scaling.tasks;
 
 public class HANDLE_TRAFFIC extends Task{
     //TODO: add relevant instance variables

@@ -1,4 +1,4 @@
-package cs455.scaling.Tasks;
+package cs455.scaling.tasks;
 
 //Enum for nice switch cases if we need it.
 public enum TaskType {

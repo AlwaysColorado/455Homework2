@@ -1,4 +1,4 @@
-package cs455.scaling.Tasks;
+package cs455.scaling.tasks;
 
 //Task to register a client
 public class REGISTER_CLIENT extends Task{
