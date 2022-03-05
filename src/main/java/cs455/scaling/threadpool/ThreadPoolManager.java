@@ -27,7 +27,35 @@ public class ThreadPoolManager implements Runnable{
 
     }
 
+    public void addTask(Task task) {
 
+        // Create new Tasklist if one doesn't exist
+        if (taskList == null) {
+            taskList = new LinkedBlockingQueue<>();
+            startTime = System.nanoTime();
+        }
+
+        // If time is up push the TaskList to BatchList and start a new one
+        if (timesUp() || !taskList.offer(task)) {
+            startNewBatchList();
+        }
+
+        taskList.offer(task);
+
+    }
+
+    private void startNewBatchList() {
+        threadPool.addTaskList(taskList);
+        taskList = new LinkedBlockingQueue<>();
+        startTime = System.nanoTime();
+    }
+
+    // Check for time left on batchTimer;
+    private boolean timesUp() {
+        long currTime = System.nanoTime();
+        long timePast = currTime - startTime;
+        return ( timePast > batchTime ? true : false );
+    }
 
 
 }
