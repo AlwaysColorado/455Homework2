@@ -10,8 +10,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ThreadPool{
     // instantiate blockingQueue 
-    private BlockingQueue<Task> taskList; {
-    };
+    private BlockingQueue<Task> taskList;
     private AtomicBoolean isKillThreads = new AtomicBoolean(false);
     private Queue<BlockingQueue<Task>> batchList = new LinkedList<>();
 
