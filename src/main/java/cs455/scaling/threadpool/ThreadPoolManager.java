@@ -13,39 +13,37 @@ public class ThreadPoolManager implements Runnable{
     private final int batchSize;
     private final long batchTime;
     private long startTime;
-
-    private final long NANO_PER_SECOND = 1000000000;
+    private boolean tasksToAdd;
 
     public ThreadPoolManager (int threadPoolSize, int bs, long bt) {
+
         threadPool = new ThreadPool(threadPoolSize);
         batchSize = bs;
-        batchTime = bt * NANO_PER_SECOND;
+        batchTime = bt * 1000000000; // SECOND-TO-NANO Conversion
+        tasksToAdd = true;
     }
 
     @Override
     public void run() {
-
-    }
-
-    public void addTask(Task task) {
-
-        // Create new Tasklist if one doesn't exist
-        if (taskList == null) {
-            taskList = new LinkedBlockingQueue<>();
-            startTime = System.nanoTime();
+        // If taskList doesn't exist, the batchTime has passed or the batchSize is met
+        while (tasksToAdd) {
+            // Create start the first taskList
+            if (taskList == null || timesUp() || taskList.size() >= batchSize) {
+                startNewTaskList();
+            }
         }
-
-        // If time is up push the TaskList to BatchList and start a new one
-        if (timesUp() || !taskList.offer(task)) {
-            startNewBatchList();
-        }
-
-        taskList.offer(task);
-
-    }
-
-    private void startNewBatchList() {
+        // Ensure any last are added to the ThreadPool for completion
         threadPool.addTaskList(taskList);
+    }
+
+    // Start a new TaskList
+    private void startNewTaskList() {
+        // If this isn't the first TaskList, pass the list to the ThreadPool
+        if (taskList != null) {
+            threadPool.addTaskList(taskList);
+        }
+
+        // Create a new taskList and set the start time
         taskList = new LinkedBlockingQueue<>();
         startTime = System.nanoTime();
     }
@@ -54,8 +52,31 @@ public class ThreadPoolManager implements Runnable{
     private boolean timesUp() {
         long currTime = System.nanoTime();
         long timePast = currTime - startTime;
-        return ( timePast > batchTime ? true : false );
+        return ( timePast >= batchTime );
     }
 
+
+    // Called by Server when a task is available
+    public synchronized void addTask(Task task) {
+
+        boolean taskAdded = false;
+
+        // while the task has not been added
+        while ( !taskAdded ) {
+
+            // If batchTime or batchSize have been met
+            if (timesUp() || taskList.size() == batchSize) {
+                startNewTaskList();
+            }
+
+            // Try adding the task
+            taskAdded = taskList.offer(task);
+
+        }
+    }
+
+    public synchronized void terminate() {
+        tasksToAdd = false;
+    }
 
 }
