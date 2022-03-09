@@ -4,7 +4,9 @@ import cs455.scaling.tasks.HANDLE_TRAFFIC;
 import cs455.scaling.tasks.REGISTER_CLIENT;
 import cs455.scaling.tasks.Task;
 
+import java.util.TimerTask;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ThreadPoolManager implements Runnable{
 
@@ -12,6 +14,7 @@ public class ThreadPoolManager implements Runnable{
     private LinkedBlockingQueue<Task> taskList;
     private final int batchSize;
     private final long batchTime;
+    private TimerTask timerTask;
     private long startTime;
     private boolean tasksToAdd;
 
