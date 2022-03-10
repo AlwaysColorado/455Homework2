@@ -1,12 +1,8 @@
 package cs455.scaling.threadpool;
 
-import cs455.scaling.tasks.HANDLE_TRAFFIC;
-import cs455.scaling.tasks.REGISTER_CLIENT;
 import cs455.scaling.tasks.Task;
 
-import java.util.TimerTask;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ThreadPoolManager implements Runnable{
 
@@ -14,9 +10,8 @@ public class ThreadPoolManager implements Runnable{
     private LinkedBlockingQueue<Task> taskList;
     private final int batchSize;
     private final long batchTime;
-    private TimerTask timerTask;
     private long startTime;
-    private boolean tasksToAdd;
+    private boolean tasksToAdd; // Server can set to false to exit run() while loop
 
     public ThreadPoolManager (int threadPoolSize, int bs, long bt) {
 
@@ -28,14 +23,14 @@ public class ThreadPoolManager implements Runnable{
 
     @Override
     public void run() {
-        // If taskList doesn't exist, the batchTime has passed or the batchSize is met
+        // While the server is still sending tasks
         while (tasksToAdd) {
-            // Create start the first taskList
+            // Create the first taskList
             if (taskList == null || timesUp() || taskList.size() >= batchSize) {
                 startNewTaskList();
             }
         }
-        // Ensure any last are added to the ThreadPool for completion
+        // Ensure the last TaskList is added to the ThreadPool for completion
         threadPool.addTaskList(taskList);
     }
 
@@ -51,7 +46,7 @@ public class ThreadPoolManager implements Runnable{
         startTime = System.nanoTime();
     }
 
-    // Check for time left on batchTimer;
+    // Check for time left on batchTimer
     private boolean timesUp() {
         long currTime = System.nanoTime();
         long timePast = currTime - startTime;
@@ -61,7 +56,6 @@ public class ThreadPoolManager implements Runnable{
 
     // Called by Server when a task is available
     public synchronized void addTask(Task task) {
-
         boolean taskAdded = false;
 
         // while the task has not been added
@@ -78,6 +72,8 @@ public class ThreadPoolManager implements Runnable{
         }
     }
 
+    // Run while loop condition to false so the final tasks will be added to the
+    //      BatchList before closing the TPM
     public synchronized void terminate() {
         tasksToAdd = false;
     }
