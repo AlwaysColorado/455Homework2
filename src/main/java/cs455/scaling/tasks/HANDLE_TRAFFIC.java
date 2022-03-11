@@ -42,6 +42,7 @@ public class HANDLE_TRAFFIC extends Task{
                 ByteBuffer writeBuffer = ByteBuffer.allocate(messageLength);
                 writeBuffer.put(hashBytes);
                 clientSocket.write(writeBuffer);
+                readBuffer.clear();
                 writeBuffer.clear();
                 //can we please handle this exception this in Hashing?
             } catch (NoSuchAlgorithmException e) {
