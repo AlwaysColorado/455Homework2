@@ -8,48 +8,57 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class ThreadPool{
-    // instantiate blockingQueue 
+public class ThreadPool extends Thread {
+    // instantiate blockingQueue
     private BlockingQueue<Task> taskList;
     private AtomicBoolean isKillThreads = new AtomicBoolean(false);
     private Queue<BlockingQueue<Task>> batchList = new LinkedList<>();
     private AtomicBoolean pullTaskList = new AtomicBoolean(false);
+    private int tps;
+    private Worker[] workers;
 
     public ThreadPool(int tps) throws InterruptedException {
         // create new blockingQueue
-        taskList = new LinkedBlockingQueue<>();
-
-        Worker[] workers = new Worker[tps];
+        this.tps = tps;
+        this.workers = new Worker[tps];
         for (int i = 0; i < tps; i++) {
             workers[i] = new Worker(); // create a new worker to do all tasks from batch
+            workers[i].start();
         }
+    }
+
+    public void run() {
         pullTaskList.set(true);
-        while(pullTaskList.get()) {
+        while (pullTaskList.get()) {
             // pull a taskList from batchList
             synchronized (batchList) {
                 if (batchList.isEmpty()) {
-                    batchList.wait();
+                    try {
+                        batchList.wait();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
                 // task list is a batch which contains tasks
                 // polls a batch
                 // taskList size is 1
                 taskList = batchList.poll();
-            }
-            // once it polls the task we want a worker to come and get the taskList
-            for (int i = 0; i < tps; i++) {
-                // I think there needs to be a condition to check if its available
-                // not sure however, as the lock mechanism of synchronized in worker may make this
-                // obsolete
-                System.out.println("Worker collecting batch");
-                workers[i].start();
-                System.out.println("Worker finished with batch");
-            }
+                workerHelper(taskList);
 
-            // if (!condition){
-            //      pullTaskList.set(false);
-            //}
+            }
+            // just check if available and give to a worker
         }
     }
+
+    // this helper method will check if all of the workers are available and add it to the
+    public void workerHelper(BlockingQueue<Task> taskList){
+        for(int i=0; i<tps; i++){
+            if (workers[i].isAvailable.get()) {
+                workers[i].addTaskList(taskList);
+            }
+        }
+    }
+
 
     public void addTaskList(BlockingQueue<Task> taskList){
         synchronized (batchList){
@@ -67,10 +76,18 @@ public class ThreadPool{
         private Task task;
         private AtomicBoolean isAvailable = new AtomicBoolean(false);
         private AtomicBoolean running = new AtomicBoolean(false);
+        private BlockingQueue<Task> taskList;
 
         private void killIndividualThread(){
             running.set(false);
         }
+
+        public void addTaskList(BlockingQueue<Task> tl){
+            this.taskList = tl;
+            this.taskList.notify();
+        }
+
+
 
         public void run(){
             running.set(true);
@@ -79,8 +96,9 @@ public class ThreadPool{
                 synchronized (taskList){
                     while (taskList.size() == 0){
                         try{
-                            taskList.wait();
                             isAvailable.set(true);
+                            taskList.wait();
+
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
