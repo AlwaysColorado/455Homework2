@@ -26,12 +26,11 @@ public class HANDLE_TRAFFIC extends Task{
         //Get the client's SocketChannel
         SocketChannel clientSocket = (SocketChannel) key.channel();
         //read bytes from the channel into the buffer
+        int bytesRead = 0;
         try {
-            int bytesRead = clientSocket.read(readBuffer);
-            //if return is -1, close connection
-            if (bytesRead == -1)
-                clientSocket.close();
-            else {
+            //read 8kb packets from the channel until end of stream (-1 gets returned)
+            while(readBuffer.hasRemaining() && bytesRead != -1) {
+                bytesRead = clientSocket.read(readBuffer);
                 //Take the byte[] from the packet, get the hash.
                 // The packet itself is completely worthless, so we don't need to save it.
                 String hash = hasher.SHA1FromBytes(readBuffer.array());
