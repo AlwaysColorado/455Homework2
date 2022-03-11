@@ -16,7 +16,6 @@ public class ThreadPool extends Thread {
     private AtomicBoolean pullTaskList = new AtomicBoolean(false);
     private int tps;
     private int counter = 0;
-    private boolean foundWorker = false;
     private Worker[] workers;
 
     public ThreadPool(int tps) throws InterruptedException {
@@ -53,7 +52,8 @@ public class ThreadPool extends Thread {
 
     // this helper method will check if all of the workers are available and add it to the
     public void workerHelper(BlockingQueue<Task> taskList){
-       while(!foundWorker){
+        boolean foundWorker = false;
+        while(!foundWorker){
            if(workers[counter].isAvailable.get()){
                workers[counter].addTaskList(taskList);
                foundWorker = true;
