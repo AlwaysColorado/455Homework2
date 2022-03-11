@@ -1,7 +1,5 @@
 package cs455.scaling.tasks;
 
-import java.io.IOException;
-
 //Describes a task to be carried out by a worker thread
 public abstract class Task {
     //What kind of task it is.
