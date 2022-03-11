@@ -1,7 +1,6 @@
 package cs455.scaling.tasks;
 
 import java.io.IOException;
-import java.net.Socket;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;

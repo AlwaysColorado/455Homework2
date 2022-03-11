@@ -20,7 +20,6 @@ public class HANDLE_TRAFFIC extends Task{
 
     @Override
     public void executeTask() throws IOException {
-        //Step 1: Read the traffic from the client.
         //First, we need a buffer to read data. The client will be sending a packet that's 8196 bytes.
         // will one key read multiple such messages?
         ByteBuffer readBuffer = ByteBuffer.allocate(8196);
@@ -44,8 +43,8 @@ public class HANDLE_TRAFFIC extends Task{
                 writeBuffer.put(hashBytes);
                 clientSocket.write(writeBuffer);
                 writeBuffer.clear();
+                //can we please handle this exception this in Hashing?
             } catch (NoSuchAlgorithmException e) {
-                //please handle this in Hashing.
                 e.printStackTrace();
             }
         }
