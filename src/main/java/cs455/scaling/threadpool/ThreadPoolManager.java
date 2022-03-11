@@ -29,7 +29,7 @@ public class ThreadPoolManager implements Runnable{
         // While the server is still sending tasks
         while (tasksToAdd.get()) {
             // Create the first taskList
-            if (timesUp() || taskList.size() >= batchSize) {
+            if (timesUp() || taskList.remainingCapacity() == 0) {
                 addAndStartNewTaskList();
             }
         }
@@ -40,14 +40,16 @@ public class ThreadPoolManager implements Runnable{
     // Start a new TaskList
     private void addAndStartNewTaskList() {
         // If this isn't the first TaskList, pass the list to the ThreadPool
-        threadPool.addTaskList(taskList);
+        if (!taskList.isEmpty()) {
+            threadPool.addTaskList(taskList);
+        }
         newTaskList();
 
     }
 
     private void newTaskList() {
         // Create a new taskList and set the start time
-        taskList = new LinkedBlockingQueue<>();
+        taskList = new LinkedBlockingQueue<>(batchSize);
         startTime = System.nanoTime();
     }
 

@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import cs455.scaling.threadpool.ThreadPool;
+import cs455.scaling.threadpool.ThreadPoolManager;
 import cs455.scaling.util.Hashing;
 import java.nio.ByteBuffer;
 import java.util.List;
@@ -25,16 +26,19 @@ public class Server implements Runnable {
     private static final Hashing hashDevice = new Hashing();
     private static List<byte[]> batches;
     private final int batchSize;
-    private final int threadPoolSize;
-    private final int batchTime;
+//    private final int threadPoolSize;
+//    private final int batchTime;
     private final int portNum;
+    private final ThreadPoolManager threadPoolManager;
 
     // empty constructor currently
     public Server(int pn, int bs, int bt, int tps) throws IOException {
         this.portNum = pn;
         this.batchSize = bs;
-        this.threadPoolSize = tps;
-        this.batchTime = bt;
+//        this.threadPoolSize = tps;
+//        this.batchTime = bt;
+        this.threadPoolManager = new ThreadPoolManager(tps, bs, bt);
+        threadPoolManager.start();
     }
 
     private void openServerChannel(int pn) throws IOException{
