@@ -19,21 +19,21 @@ public class HANDLE_TRAFFIC extends Task{
     }
 
     @Override
-    public void executeTask() throws IOException {
+    public void executeTask(){
         //First, we need a buffer to read data. The client will be sending a packet that's 8196 bytes.
         // will one key read multiple such messages?
         ByteBuffer readBuffer = ByteBuffer.allocate(8196);
         //Get the client's SocketChannel
         SocketChannel clientSocket = (SocketChannel) key.channel();
         //read bytes from the channel into the buffer
-        int bytesRead = clientSocket.read(readBuffer);
-        //if return is -1, close connection
-        if(bytesRead == -1)
-            clientSocket.close();
-        else{
-            //Take the byte[] from the packet, get the hash.
-            // The packet itself is completely worthless, so we don't need to save it.
-            try {
+        try {
+            int bytesRead = clientSocket.read(readBuffer);
+            //if return is -1, close connection
+            if (bytesRead == -1)
+                clientSocket.close();
+            else {
+                //Take the byte[] from the packet, get the hash.
+                // The packet itself is completely worthless, so we don't need to save it.
                 String hash = hasher.SHA1FromBytes(readBuffer.array());
                 //get the hash's bytes, and length in bytes.
                 byte[] hashBytes = hash.getBytes();
@@ -44,10 +44,14 @@ public class HANDLE_TRAFFIC extends Task{
                 clientSocket.write(writeBuffer);
                 readBuffer.clear();
                 writeBuffer.clear();
-                //can we please handle this exception this in Hashing?
-            } catch (NoSuchAlgorithmException e) {
-                e.printStackTrace();
             }
+        } catch (IOException e) {
+            //This most likely means either the client died or the read/write failed.
+            // move on, discard task.
+            //e.printStackTrace();
+        } catch (NoSuchAlgorithmException e) {
+            //refactor to handle exception in hashing.
+            e.printStackTrace();
         }
     }
 }

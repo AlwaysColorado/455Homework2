@@ -17,5 +17,5 @@ public abstract class Task {
     //This can be called from a worker on any given task,
     // without caring what kind of task it is.
     // Leave the specifics of execution to the child.
-    public abstract void executeTask() throws IOException;
+    public abstract void executeTask();
 }
