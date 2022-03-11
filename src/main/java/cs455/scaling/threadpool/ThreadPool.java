@@ -13,29 +13,42 @@ public class ThreadPool{
     private BlockingQueue<Task> taskList;
     private AtomicBoolean isKillThreads = new AtomicBoolean(false);
     private Queue<BlockingQueue<Task>> batchList = new LinkedList<>();
+    private AtomicBoolean pullTaskList = new AtomicBoolean(false);
 
-    public ThreadPool(int threadPoolSize) throws InterruptedException {
+    public ThreadPool(int tps) throws InterruptedException {
         // create new blockingQueue
         taskList = new LinkedBlockingQueue<>();
 
-        Worker[] workers = new Worker[threadPoolSize];
-
-            // pull a taskList from batchList
-        synchronized (batchList) {
-            if (batchList.isEmpty()) {
-                batchList.wait();
-            }
-            // task list is a batch which contains tasks
-            // polls a batch
-            taskList = batchList.poll();
-        }
-        // each worker should work on a separate batch
-
-        for (int i = 0; i < threadPoolSize; i++) {
+        Worker[] workers = new Worker[tps];
+        for (int i = 0; i < tps; i++) {
             workers[i] = new Worker(); // create a new worker to do all tasks from batch
-            workers[i].start(); // run the worker
         }
+        pullTaskList.set(true);
+        while(pullTaskList.get()) {
+            // pull a taskList from batchList
+            synchronized (batchList) {
+                if (batchList.isEmpty()) {
+                    batchList.wait();
+                }
+                // task list is a batch which contains tasks
+                // polls a batch
+                // taskList size is 1
+                taskList = batchList.poll();
+            }
+            // once it polls the task we want a worker to come and get the taskList
+            for (int i = 0; i < tps; i++) {
+                // I think there needs to be a condition to check if its available
+                // not sure however, as the lock mechanism of synchronized in worker may make this
+                // obsolete
+                System.out.println("Worker collecting batch");
+                workers[i].start();
+                System.out.println("Worker finished with batch");
+            }
 
+            // if (!condition){
+            //      pullTaskList.set(false);
+            //}
+        }
     }
 
     public void addTaskList(BlockingQueue<Task> taskList){
