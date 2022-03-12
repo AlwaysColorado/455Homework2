@@ -1,9 +1,6 @@
 package cs455.scaling.server;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.TimerTask;
+import java.util.*;
 
 public class ServerStatistics extends TimerTask {
 
@@ -12,7 +9,7 @@ public class ServerStatistics extends TimerTask {
 
     public ServerStatistics( Server server ) {
         this.server = server;
-        this.clientStatistics = server.getClientStatistics();
+        clientStatistics = server.getClientStatistics(); // Should be empty now
     }
 
     @Override
@@ -23,27 +20,42 @@ public class ServerStatistics extends TimerTask {
 
         // Retrieve the HashMap with the stats
         clientStatistics = server.getClientStatistics();
+        List<Integer> msgCounts = clientBreakdown();
 
         // DO THE MATH!
         // ------------
-        double messagesPerClient = -99; //TODO: do the math
-        int activeClientConnections = getActiveClients();
-        double meanPerClientThroughput = -99; //TODO: do the math
+        int activeClientConnections = msgCounts.size(); // Number of active client connections (in last 20 seconds)
+        long totalMsgCt = getTotalMsgCount(msgCounts); // total messages sent in the last 20 seconds
+        double throughput = getThroughput(totalMsgCt); // Average number of messages processed per second in the last 20 seconds
+        double meanPerClientThroughput = -99; // TODO: do the math
         double sdPerClientThroughput = -99; //TODO: do the math
 
-        // TODO: Format floating point numbers of limit length
+        // TODO: Format floating point numbers to limit length
         System.out.printf("[%s] Server Throughput: %f messages/s, Active Client Connections: %d, " +
                         "Mean Per-Client Throughput: %f messages/s, Std. Dev. Of Per-Client Throughput: %f messages/s",
-                date, messagesPerClient, activeClientConnections, meanPerClientThroughput, sdPerClientThroughput);
+                date, throughput, activeClientConnections, meanPerClientThroughput, sdPerClientThroughput);
     }
 
-    private int getActiveClients() {
+    private List<Integer> clientBreakdown() {
         int clientCount = 0;
 
         // Increment client count if value > 0
-        
-        return clientCount;
+        List<Integer> messageCounts = (List<Integer>) clientStatistics.values(); // Get the values
+        messageCounts.removeIf(v -> v == 0); // Remove 'zero' entries TODO: Is this written correctly?
+
+        return messageCounts;
     }
 
+    private long getTotalMsgCount(List<Integer> msgCounts) {
+        long totalMsgCount = 0;
+        for (Integer count : msgCounts) {
+            totalMsgCount += count;
+        }
+        return totalMsgCount;
+    }
 
+    private double getThroughput(long totalMsgCount) {
+
+        return (totalMsgCount / 20F);
+    }
 }
