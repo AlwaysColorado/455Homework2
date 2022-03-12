@@ -7,14 +7,11 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.Selector;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.*;
 
 import cs455.scaling.threadpool.ThreadPool;
 import cs455.scaling.util.Hashing;
 import java.nio.ByteBuffer;
-import java.util.List;
 
 public class Server implements Runnable {
 
@@ -29,7 +26,7 @@ public class Server implements Runnable {
     private final int threadPoolSize;
     private final int batchTime;
     private final int portNum;
-    private HashMap clientStatistics;
+    private Hashtable clientStatistics;
 
 
     // empty constructor currently
@@ -124,8 +121,12 @@ public class Server implements Runnable {
         return batch;
     }
 
-    public synchronized HashMap getClientStatistics(){
-        HashMap cStats = (HashMap) clientStatistics.clone(); // This should be a shallow copy
+    public synchronized void incrementClientMsgCount() {
+
+    }
+
+    public synchronized Hashtable getClientStatistics(){
+        Hashtable cStats = (Hashtable) clientStatistics.clone(); // Shallow copy
         clientStatistics.replaceAll((key, value) -> 0);  // This *SHOULD* replace all values with zero??
         return cStats;
     }

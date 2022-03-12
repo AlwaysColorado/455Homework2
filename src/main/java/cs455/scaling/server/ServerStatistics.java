@@ -2,15 +2,17 @@ package cs455.scaling.server;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.TimerTask;
 
 public class ServerStatistics extends TimerTask {
 
     private final Server server;
-    private HashMap clientStatistics;
+    private Hashtable clientStatistics;
 
     public ServerStatistics( Server server ) {
         this.server = server;
+        this.clientStatistics = server.getClientStatistics();
     }
 
     @Override
@@ -25,7 +27,7 @@ public class ServerStatistics extends TimerTask {
         // DO THE MATH!
         // ------------
         double messagesPerClient = -99; //TODO: do the math
-        int activeClientConnections = clientStatistics.size();
+        int activeClientConnections = getActiveClients();
         double meanPerClientThroughput = -99; //TODO: do the math
         double sdPerClientThroughput = -99; //TODO: do the math
 
@@ -34,4 +36,14 @@ public class ServerStatistics extends TimerTask {
                         "Mean Per-Client Throughput: %f messages/s, Std. Dev. Of Per-Client Throughput: %f messages/s",
                 date, messagesPerClient, activeClientConnections, meanPerClientThroughput, sdPerClientThroughput);
     }
+
+    private int getActiveClients() {
+        int clientCount = 0;
+
+        // Increment client count if value > 0
+        
+        return clientCount;
+    }
+
+
 }
