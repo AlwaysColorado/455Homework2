@@ -8,6 +8,7 @@ import java.nio.channels.SocketChannel;
 import java.nio.channels.Selector;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 
 import cs455.scaling.threadpool.ThreadPool;
@@ -28,6 +29,8 @@ public class Server implements Runnable {
     private final int threadPoolSize;
     private final int batchTime;
     private final int portNum;
+    private HashMap clientStatistics;
+
 
     // empty constructor currently
     public Server(int pn, int bs, int bt, int tps) throws IOException {
@@ -119,6 +122,12 @@ public class Server implements Runnable {
             }
         }
         return batch;
+    }
+
+    public synchronized HashMap getClientStatistics(){
+        HashMap cStats = (HashMap) clientStatistics.clone(); // This should be a shallow copy
+        clientStatistics.replaceAll((key, value) -> 0);  // This *SHOULD* replace all values with zero??
+        return cStats;
     }
 
     @Override
