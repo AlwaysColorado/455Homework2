@@ -2,6 +2,7 @@ package cs455.scaling.server;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
@@ -26,7 +27,7 @@ public class Server implements Runnable {
     private final int threadPoolSize;
     private final int batchTime;
     private final int portNum;
-    private Hashtable clientStatistics;
+    private Hashtable<SocketAddress, Integer> clientStatistics;
 
 
     // empty constructor currently
@@ -35,6 +36,7 @@ public class Server implements Runnable {
         this.batchSize = bs;
         this.threadPoolSize = tps;
         this.batchTime = bt;
+        this.clientStatistics = new Hashtable<>();
     }
 
     private void openServerChannel(int pn) throws IOException{
@@ -121,12 +123,13 @@ public class Server implements Runnable {
         return batch;
     }
 
-    public synchronized void incrementClientMsgCount() {
-
+    public synchronized void incrementClientMsgCount(SocketAddress clientAddress, int msgCount) {
+        //update the client's message count with supplied
+        clientStatistics.put(clientAddress, clientStatistics.get(clientAddress) + msgCount);
     }
 
-    public synchronized Hashtable getClientStatistics(){
-        Hashtable cStats = (Hashtable) clientStatistics.clone(); // Shallow copy
+    public synchronized Hashtable<SocketAddress, Integer> getClientStatistics(){
+        Hashtable<SocketAddress, Integer> cStats = (Hashtable<SocketAddress, Integer>) clientStatistics.clone(); // Shallow copy
         clientStatistics.replaceAll((key, value) -> 0);  // This *SHOULD* replace all values with zero??
         return cStats;
     }
