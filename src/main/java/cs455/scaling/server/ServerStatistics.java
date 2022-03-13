@@ -22,12 +22,11 @@ public class ServerStatistics extends TimerTask {
         // Retrieve the HashMap with the stats
         clientStatistics = server.getClientStatistics();
         List<Integer> msgCounts = clientBreakdown();
-        long totalMsgCt = getTotalMsgCount(msgCounts); // total messages sent in the last 20 seconds
 
         // DO THE MATH!
         // ------------
         int activeClientConnections = msgCounts.size(); // Number of active client connections (in last 20 seconds)
-        double throughput = getThroughput(totalMsgCt); // Average number of messages processed per second in the last 20 seconds
+        double throughput = getThroughput(msgCounts); // Average number of messages processed per second in the last 20 seconds
         double meanPerClientThroughput = getMeanPerClientThroughput(msgCounts, activeClientConnections); // Mean of the per client throughput
         double sdPerClientThroughput = getStdDevPerClientThroughput(msgCounts, meanPerClientThroughput, activeClientConnections); // Standard Deviation of the per client throughput
 
@@ -48,16 +47,12 @@ public class ServerStatistics extends TimerTask {
         return messageCounts;
     }
 
-    private long getTotalMsgCount(List<Integer> msgCounts) {
-        long totalMsgCount = 0;
+    private double getThroughput(List<Integer> msgCounts) {
+        long totalMsgCount = 0; // total messages sent in the last 20 seconds
         for (Integer count : msgCounts) {
             totalMsgCount += count;
         }
-        return totalMsgCount;
-    }
-
-    private double getThroughput(long totalMsgCount) {
-        return (totalMsgCount / 20F);
+        return (totalMsgCount / 20F); // Messages sent per second
     }
 
     private double getMeanPerClientThroughput(List<Integer> perClientCounts, int clients) {
