@@ -29,6 +29,7 @@ public class Server implements Runnable {
     private final int portNum;
     private Hashtable<SocketAddress, Integer> clientStatistics;
     private int messageCountSum = 0;
+    Timer timer;
 
 
     // empty constructor currently
@@ -38,6 +39,7 @@ public class Server implements Runnable {
         this.threadPoolSize = tps;
         this.batchTime = bt;
         this.clientStatistics = new Hashtable<>();
+
     }
 
     private void openServerChannel(int pn) throws IOException{
@@ -47,6 +49,12 @@ public class Server implements Runnable {
         System.out.println("Server started on port " + pn);
         serverSocket.configureBlocking( false ); // blocking is false
         serverSocket.register(selector, SelectionKey.OP_ACCEPT ); // register selector
+    }
+
+    // Start the timer to print stats every 20 seconds
+    private void startStatsTimer() {
+        timer = new Timer();
+        timer.scheduleAtFixedRate(new ServerStatistics(this), 0, 20000);
     }
 
     private void waitForConnections() throws IOException, NoSuchAlgorithmException {
@@ -155,6 +163,7 @@ public class Server implements Runnable {
         int tps = Integer.parseInt(args[3]);
         Server server = new Server(pn, bs, bt, tps);
         server.openServerChannel(pn);
+        server.startStatsTimer();
         ThreadPool tp = new ThreadPool(tps);
         while(server.stillRunning){
             //refactor 
@@ -165,6 +174,8 @@ public class Server implements Runnable {
         }
 
     }
+
+
 
 
 }
