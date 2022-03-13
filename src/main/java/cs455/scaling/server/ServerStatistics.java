@@ -1,11 +1,12 @@
 package cs455.scaling.server;
 
+import java.net.SocketAddress;
 import java.util.*;
 
 public class ServerStatistics extends TimerTask {
 
     private final Server server;
-    private Hashtable clientStatistics;
+    private Hashtable<SocketAddress, Integer> clientStatistics;
 
     public ServerStatistics( Server server ) {
         this.server = server;
@@ -60,17 +61,19 @@ public class ServerStatistics extends TimerTask {
     }
 
     private double getMeanPerClientThroughput(List<Integer> perClientCounts, int clients) {
-
         double sum = 0.0;
         for (int count : perClientCounts) {
             sum += count;
         }
         return (sum / clients);
-
     }
 
-    public double getStdDevPerClientThroughput(List<Integer> perClientCounts, double meanPerClientThroughput, int clients) {
-
+    public double getStdDevPerClientThroughput(List<Integer> counts, double mean, int clients) {
+        double stdDev = 0.0;
+        for (int count : counts) {
+            stdDev = Math.pow(count - mean, 2);
+        }
+        return Math.sqrt( stdDev / clients);
     }
 
 }
