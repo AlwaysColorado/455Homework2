@@ -2,19 +2,18 @@ package cs455.scaling.server;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.Selector;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.*;
 
 import cs455.scaling.threadpool.ThreadPool;
 import cs455.scaling.threadpool.ThreadPoolManager;
 import cs455.scaling.util.Hashing;
 import java.nio.ByteBuffer;
-import java.util.List;
 
 public class Server implements Runnable {
 
@@ -29,14 +28,18 @@ public class Server implements Runnable {
 //    private final int threadPoolSize;
 //    private final int batchTime;
     private final int portNum;
+    private Hashtable<SocketAddress, Integer> clientStatistics;
+    private int messageCountSum = 0;
+    Timer timer;
     private final ThreadPoolManager threadPoolManager;
 
     // empty constructor currently
     public Server(int pn, int bs, int bt, int tps) throws IOException {
         this.portNum = pn;
         this.batchSize = bs;
-//        this.threadPoolSize = tps;
-//        this.batchTime = bt;
+        this.threadPoolSize = tps;
+        this.batchTime = bt;
+        this.clientStatistics = new Hashtable<>();
         this.threadPoolManager = new ThreadPoolManager(tps, bs, bt);
         threadPoolManager.start();
     }
@@ -48,6 +51,12 @@ public class Server implements Runnable {
         System.out.println("Server started on port " + pn);
         serverSocket.configureBlocking( false ); // blocking is false
         serverSocket.register(selector, SelectionKey.OP_ACCEPT ); // register selector
+    }
+
+    // Start the timer to print stats every 20 seconds
+    private void startStatsTimer() {
+        timer = new Timer();
+        timer.scheduleAtFixedRate(new ServerStatistics(this), 0, 20000);
     }
 
     private void waitForConnections() throws IOException, NoSuchAlgorithmException {
@@ -125,6 +134,18 @@ public class Server implements Runnable {
         return batch;
     }
 
+    public synchronized void incrementClientMsgCount(SocketAddress clientAddress, int msgCount) {
+        //update the client's message count with supplied
+        clientStatistics.put(clientAddress, clientStatistics.get(clientAddress) + msgCount);
+        this.messageCountSum += msgCount;
+    }
+
+    public synchronized Hashtable<SocketAddress, Integer> getClientStatistics(){
+        Hashtable<SocketAddress, Integer> cStats = (Hashtable<SocketAddress, Integer>) clientStatistics.clone(); // Shallow copy
+        clientStatistics.replaceAll((key, value) -> 0);  // This *SHOULD* replace all values with zero??
+        return cStats;
+    }
+
     @Override
     public void run() {
         try {
@@ -144,7 +165,18 @@ public class Server implements Runnable {
         int tps = Integer.parseInt(args[3]);
         Server server = new Server(pn, bs, bt, tps);
         server.openServerChannel(pn);
+        server.startStatsTimer();
+        ThreadPool tp = new ThreadPool(tps);
+        while(server.stillRunning){
+            //refactor 
+            //tp.executeThreadPool(server);
+            if (!server.stillRunning){
+                tp.killThreads();
+            }
+        }
     }
+
+
 
 
 }
