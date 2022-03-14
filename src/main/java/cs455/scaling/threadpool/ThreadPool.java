@@ -2,6 +2,7 @@ package cs455.scaling.threadpool;
 
 import cs455.scaling.tasks.Task;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -54,11 +55,17 @@ public class ThreadPool extends Thread {
         boolean foundWorker = false;
         int counter = 0;
         while(!foundWorker){
+
            if(workers[counter].isAvailable.get()){
                workers[counter].addTaskList(taskList);
                foundWorker = true;
            }
            counter++;
+           // if counter hits tps and no worker has been found then we should reset the counter
+            // to keep the counter going, so we only exit this loop if we find a worker
+           if (counter == tps && !foundWorker){
+               counter = 0;
+           }
        }
     }
 
