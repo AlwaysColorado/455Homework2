@@ -8,6 +8,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Random;
+import java.util.Timer;
+
 import cs455.scaling.util.Hashing;
 
 public class Client {
@@ -17,6 +19,11 @@ public class Client {
     private static ByteBuffer buffer;
 
     public Client() throws IOException {
+        // CLIENT TIMER:  5 minutes in milliseconds
+        long clientTimeoutDuration = 300000;
+        ClientTimer clientTimer = new ClientTimer(clientTimeoutDuration);
+        clientTimer.start();
+
         try {
             // connect to the server
             clientSocket = SocketChannel.open(new InetSocketAddress("localhost", 9900)); //local host will be changed later
@@ -80,3 +87,4 @@ public class Client {
 
     }
 }
+
