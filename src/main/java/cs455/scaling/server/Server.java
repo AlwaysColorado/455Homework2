@@ -11,6 +11,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 import cs455.scaling.threadpool.ThreadPool;
+import cs455.scaling.threadpool.ThreadPoolManager;
 import cs455.scaling.util.Hashing;
 import java.nio.ByteBuffer;
 
@@ -24,13 +25,13 @@ public class Server implements Runnable {
     private static final Hashing hashDevice = new Hashing();
     private static List<byte[]> batches;
     private final int batchSize;
-    private final int threadPoolSize;
-    private final int batchTime;
+//    private final int threadPoolSize;
+//    private final int batchTime;
     private final int portNum;
     private Hashtable<SocketAddress, Integer> clientStatistics;
     private int messageCountSum = 0;
     Timer timer;
-
+    private final ThreadPoolManager threadPoolManager;
 
     // empty constructor currently
     public Server(int pn, int bs, int bt, int tps) throws IOException {
@@ -39,7 +40,8 @@ public class Server implements Runnable {
         this.threadPoolSize = tps;
         this.batchTime = bt;
         this.clientStatistics = new Hashtable<>();
-
+        this.threadPoolManager = new ThreadPoolManager(tps, bs, bt);
+        threadPoolManager.start();
     }
 
     private void openServerChannel(int pn) throws IOException{
@@ -172,7 +174,6 @@ public class Server implements Runnable {
                 tp.killThreads();
             }
         }
-
     }
 
 
