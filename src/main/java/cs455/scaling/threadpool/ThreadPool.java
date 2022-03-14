@@ -11,12 +11,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class ThreadPool extends Thread {
     // instantiate blockingQueue
     private BlockingQueue<Task> taskList;
-    private AtomicBoolean isKillThreads = new AtomicBoolean(false);
-    private Queue<BlockingQueue<Task>> batchList = new LinkedList<>();
-    private AtomicBoolean pullTaskList = new AtomicBoolean(false);
-    private int tps;
-    private int counter = 0;
-    private Worker[] workers;
+    private final AtomicBoolean isKillThreads = new AtomicBoolean(false);
+    private final Queue<BlockingQueue<Task>> batchList = new LinkedList<>();
+    private final AtomicBoolean pullTaskList = new AtomicBoolean(false);
+    private final int tps;
+    private final Worker[] workers;
 
     public ThreadPool(int tps) throws InterruptedException {
         // create new blockingQueue
@@ -50,9 +49,10 @@ public class ThreadPool extends Thread {
         }
     }
 
-    // this helper method will check if all of the workers are available and add it to the
+    // this helper method will check if all the workers are available and add it to the
     public void workerHelper(BlockingQueue<Task> taskList){
         boolean foundWorker = false;
+        int counter = 0;
         while(!foundWorker){
            if(workers[counter].isAvailable.get()){
                workers[counter].addTaskList(taskList);
@@ -86,19 +86,19 @@ public class ThreadPool extends Thread {
         }
 
         public void addTaskList(BlockingQueue<Task> tl){
-            this.taskList = tl;
-            this.taskList.notify();
+            synchronized (taskList) {
+                this.taskList = tl;
+                this.taskList.notify();
+            }
         }
-
-
 
         public void run(){
             running.set(true);
             while(running.get()){
                 isAvailable.set(false);
-                synchronized (taskList){
-                    while (taskList.size() == 0){
-                        try{
+                synchronized (taskList) {
+                    while (taskList.size() == 0) {
+                        try {
                             isAvailable.set(true);
                             taskList.wait();
 
@@ -106,17 +106,12 @@ public class ThreadPool extends Thread {
                             e.printStackTrace();
                         }
                     }
+                }
                     task = taskList.poll();
-                    try{
-                        assert task != null;
-                        System.out.println("Worker Thread: Thread starting");
-                        task.executeTask(); // run the task
-                        System.out.println("Worker Thread: Worker has finished a task"); // message for testing can be removed later
-                    }
-                    catch (RuntimeException e){
-                        System.out.println("Worker Thread: There was a problem with running the task" + e);
-                    }
-            }
+                    assert task != null;
+                    System.out.println("Worker Thread: Thread starting");
+                    task.executeTask(); // run the task
+                    System.out.println("Worker Thread: Worker has finished a task"); // message for testing can be removed later
         }
 
     }
