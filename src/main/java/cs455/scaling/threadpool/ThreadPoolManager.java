@@ -20,7 +20,7 @@ public class ThreadPoolManager implements Runnable{
         threadPool.start();
         batchSize = bs;
         batchTime = bt * 1000000000; // SECOND-TO-NANO Conversion
-        tasksToAdd.set(true);
+        tasksToAdd = new AtomicBoolean(true);
         newTaskList();
     }
 
