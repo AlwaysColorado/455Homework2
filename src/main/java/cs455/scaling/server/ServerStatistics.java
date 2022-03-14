@@ -66,7 +66,7 @@ public class ServerStatistics extends TimerTask {
         // else...
         double stdDev = 0.0;
         for (int count : counts) {
-            stdDev = Math.pow(count - mean, 2);
+            stdDev += Math.pow(count - mean, 2);
         }
         return Math.sqrt( stdDev / clients);
     }
