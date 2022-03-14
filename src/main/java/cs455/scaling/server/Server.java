@@ -144,15 +144,6 @@ public class Server implements Runnable {
         int tps = Integer.parseInt(args[3]);
         Server server = new Server(pn, bs, bt, tps);
         server.openServerChannel(pn);
-        ThreadPool tp = new ThreadPool(tps);
-        while(server.stillRunning){
-            //refactor 
-            //tp.executeThreadPool(server);
-            if (!server.stillRunning){
-                tp.killThreads();
-            }
-        }
-
     }
 
 
