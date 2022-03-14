@@ -16,16 +16,12 @@ public class ServerStatistics extends TimerTask {
     @Override
     public void run() {
 
-        // Get timestamp
-        String date = new Date().toString();
+        String date = new Date().toString(); // Get timestamp
 
-        // Retrieve the HashMap with the stats
-        clientStatistics = server.getClientStatistics();
-        List<Integer> msgCounts = clientBreakdown();
+        clientStatistics = server.getClientStatistics(); // Retrieve the HashMap with the stats
+        List<Integer> msgCounts = (List<Integer>) clientStatistics.values(); // Get values from Hashtable
 
-        // DO THE MATH!
-        // ------------
-        int activeClientConnections = msgCounts.size(); // Number of active client connections (in last 20 seconds)
+        int activeClientConnections = msgCounts.size(); // Number of client connections
         double throughput = getThroughput(msgCounts); // Average number of messages processed per second in the last 20 seconds
         double meanPerClientThroughput = getMeanPerClientThroughput(msgCounts, activeClientConnections); // Mean of the per client throughput
         double sdPerClientThroughput = getStdDevPerClientThroughput(msgCounts, meanPerClientThroughput, activeClientConnections); // Standard Deviation of the per client throughput
@@ -37,16 +33,6 @@ public class ServerStatistics extends TimerTask {
     }
 
 
-    private List<Integer> clientBreakdown() {
-        int clientCount = 0;
-
-        // Increment client count if value > 0
-        List<Integer> messageCounts = (List<Integer>) clientStatistics.values(); // Get the values
-        messageCounts.removeIf(v -> v == 0); // Remove 'zero' entries
-
-        return messageCounts;
-    }
-
     private double getThroughput(List<Integer> msgCounts) {
         long totalMsgCount = 0; // total messages sent in the last 20 seconds
         for (Integer count : msgCounts) {
@@ -56,14 +42,28 @@ public class ServerStatistics extends TimerTask {
     }
 
     private double getMeanPerClientThroughput(List<Integer> perClientCounts, int clients) {
+
+        // If no active clients
+        if (clients == 0) {
+            return 0.0;
+        }
+
+        // else...
         double sum = 0.0;
         for (int count : perClientCounts) {
             sum += count;
         }
         return (sum / clients);
+
     }
 
     public double getStdDevPerClientThroughput(List<Integer> counts, double mean, int clients) {
+        // If no active clients
+        if (clients == 0) {
+            return 0.0;
+        }
+
+        // else...
         double stdDev = 0.0;
         for (int count : counts) {
             stdDev = Math.pow(count - mean, 2);
