@@ -17,12 +17,11 @@ public class Client {
     private final Queue<String> hashed_list = new LinkedList<>();
     private static SocketChannel clientSocket;
     private static ByteBuffer buffer;
+    private long totalSent;
+    private long totalReceived;
+    Timer timer;
 
     public Client() throws IOException {
-        // CLIENT TIMER:  5 minutes in milliseconds
-        long clientTimeoutDuration = 300000;
-        ClientTimer clientTimer = new ClientTimer(clientTimeoutDuration);
-        clientTimer.start();
 
         try {
             // connect to the server
@@ -32,6 +31,19 @@ public class Client {
             System.out.println("Problem with allocating buffer or clientSocket will not open");
             clientSocket.close();
         }
+
+        totalSent = 0;
+        totalReceived = 0;
+
+        // CLIENT TIMER:  5 minutes in milliseconds
+        long clientTimeoutDuration = 300000;
+        ClientTimer clientTimer = new ClientTimer(clientTimeoutDuration);
+        clientTimer.start();
+
+        // PRINT TIMER: Print totals every 20 seconds
+        timer = new Timer();
+        timer.scheduleAtFixedRate(new ClientPrintTimer(this), 0, 20000);
+
     }
 
     private void sendMessageAndCheckResponse() throws NoSuchAlgorithmException, IOException {
@@ -78,13 +90,23 @@ public class Client {
         }
     }
 
+    public synchronized long getTotalSent() {
+        long sent = totalSent;
+        totalSent = 0;
+        return sent;
+    }
+
+    public synchronized long getTotalReceived() {
+        long received = totalReceived;
+        totalReceived = 0;
+        return received;
+    }
+
     public static void main(String[] args) throws NoSuchAlgorithmException, IOException {
         for (int i=0; i<100; i++) {
             Client client = new Client();
             client.sendMessageAndCheckResponse();
         }
-
-
     }
 }
 
