@@ -1,5 +1,6 @@
 package cs455.scaling.tasks;
 
+import cs455.scaling.server.Server;
 import cs455.scaling.util.Hashing;
 
 import java.io.IOException;
@@ -12,10 +13,12 @@ public class HANDLE_TRAFFIC extends Task{
     //The key this will need to both read from and write to the client.
     public SelectionKey key;
     private final Hashing hasher = new Hashing();
+    private final Server parent;
 
-    public HANDLE_TRAFFIC(SelectionKey key) {
+    public HANDLE_TRAFFIC(SelectionKey key, Server parent) {
         super(TaskType.HANDLE_TRAFFIC);
         this.key = key;
+        this.parent = parent;
     }
 
     @Override
@@ -27,6 +30,7 @@ public class HANDLE_TRAFFIC extends Task{
         SocketChannel clientSocket = (SocketChannel) key.channel();
         //read bytes from the channel into the buffer
         int bytesRead = 0;
+        int totalMessagesRead = 0;
         try {
             //read 8kb packets from the channel until end of stream (-1 gets returned)
             while(readBuffer.hasRemaining() && bytesRead != -1) {
@@ -43,7 +47,10 @@ public class HANDLE_TRAFFIC extends Task{
                 clientSocket.write(writeBuffer);
                 readBuffer.clear();
                 writeBuffer.clear();
+                totalMessagesRead++;
             }
+            //after we've read everything off the stream, let the server know how many messages we got.
+            parent.incrementClientMsgCount(clientSocket.getLocalAddress(), totalMessagesRead);
         } catch (IOException e) {
             //This most likely means either the client died or the read/write failed.
             // move on, discard task.

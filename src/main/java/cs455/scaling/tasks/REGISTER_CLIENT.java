@@ -13,7 +13,7 @@ public class REGISTER_CLIENT extends Task{
     //References to the server's selector and the client's socket.
     public Selector selector;
     public SocketChannel clientSocket;
-    private Server parent;
+    private final Server parent;
 
     public REGISTER_CLIENT(Selector selector, SocketChannel clientSocket, Server parent) {
         super(TaskType.REGISTER_CLIENT);
