@@ -10,16 +10,13 @@ import cs455.scaling.threadpool.ThreadPool;
 import cs455.scaling.threadpool.ThreadPoolManager;
 import cs455.scaling.util.Hashing;
 import java.nio.ByteBuffer;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Server {
 
     private ServerSocketChannel serverSocket;
-    private SocketChannel clientSocket;
-    private boolean stillWaiting = true;
-    private boolean stillRunning = true;
+    private AtomicBoolean stillWaiting = new AtomicBoolean(true);
     private Selector selector;
-    private static final Hashing hashDevice = new Hashing();
-    private static List<byte[]> batches;
     private final int batchSize;
     private final int threadPoolSize;
     private final int batchTime;
@@ -66,7 +63,7 @@ public class Server {
 
     private void waitForConnections() {
         try {
-            while (stillWaiting) {
+            while (stillWaiting.get()) {
                 System.out.println("Waiting for connections");
                 selector.select();
                 if (selector.selectNow() == 0) continue;
@@ -169,6 +166,10 @@ public class Server {
         startStatsTimer();
         //Start listening for clients.
         waitForConnections();
+    }
+
+    public void killServer(){
+        stillWaiting.set(false);
     }
 
 
