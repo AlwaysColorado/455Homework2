@@ -94,7 +94,6 @@ public class Client {
     private boolean checkAndDeleteHash(String message){
         if (hashed_list.contains(message)){
             hashed_list.remove(message);
-            incrementSent();
             return true;
         }
         else{
