@@ -146,6 +146,16 @@ public class Server implements Runnable {
         }
     }
 
+    public void deregisterClient(SocketAddress clientAddress) {
+        //if the clientAddress is null, the socket closed without a worker thread being able to read the address.
+        // don't do anything. (I don't really know how to get around this problem...)
+        if(clientAddress == null)
+            return;
+        synchronized (clientStatistics){
+            clientStatistics.remove(clientAddress);
+        }
+    }
+
     public synchronized Hashtable<SocketAddress, Integer> getClientStatistics(){
         Hashtable<SocketAddress, Integer> cStats = (Hashtable<SocketAddress, Integer>) clientStatistics.clone(); // Shallow copy
         clientStatistics.replaceAll((key, value) -> 0);  // This *SHOULD* replace all values with zero??

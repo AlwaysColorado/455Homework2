@@ -4,6 +4,7 @@ import cs455.scaling.server.Server;
 import cs455.scaling.util.Hashing;
 
 import java.io.IOException;
+import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
@@ -28,10 +29,15 @@ public class HANDLE_TRAFFIC extends Task{
         ByteBuffer readBuffer = ByteBuffer.allocate(8196);
         //Get the client's SocketChannel
         SocketChannel clientSocket = (SocketChannel) key.channel();
+        //we have to null-check here, unfortunately. reading the address causes an IOException if the connection
+        // has problems, but the Server still needs the address if it fails to read...
+        SocketAddress clientAddress = null;
         //read bytes from the channel into the buffer
         int bytesRead = 0;
         int totalMessagesRead = 0;
         try {
+            //save the client's address beforehand just in case it bugs out and we need to deregister it.
+            clientAddress = clientSocket.getLocalAddress();
             //read 8kb packets from the channel until end of stream (-1 gets returned)
             while(readBuffer.hasRemaining() && bytesRead != -1) {
                 bytesRead = clientSocket.read(readBuffer);
@@ -50,10 +56,11 @@ public class HANDLE_TRAFFIC extends Task{
                 totalMessagesRead++;
             }
             //after we've read everything off the stream, let the server know how many messages we got.
-            parent.incrementClientMsgCount(clientSocket.getLocalAddress(), totalMessagesRead);
+            parent.incrementClientMsgCount(clientAddress, totalMessagesRead);
         } catch (IOException e) {
             //This most likely means either the client died or the read/write failed.
-            // move on, discard task.
+            // if the client isn't in the cloud anymore, discard it from the Hashtable.
+            parent.deregisterClient(clientAddress);
             //e.printStackTrace();
         } catch (NoSuchAlgorithmException e) {
             //refactor to handle exception in hashing.
