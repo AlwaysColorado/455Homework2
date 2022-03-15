@@ -3,10 +3,7 @@ package cs455.scaling.server;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
-import java.nio.channels.Selector;
+import java.nio.channels.*;
 import java.util.*;
 
 import cs455.scaling.threadpool.ThreadPool;
@@ -42,13 +39,23 @@ public class Server {
         threadPoolManager.start();
     }
 
-    private void openServerChannel(int pn) throws IOException{
-        selector = Selector.open(); // created once
-        serverSocket = ServerSocketChannel.open(); // open channel
-        serverSocket.socket().bind( new InetSocketAddress("localhost", pn)); // bind to relevant information
-        System.out.println("Server started on port " + pn);
-        serverSocket.configureBlocking( false ); // blocking is false
-        serverSocket.register(selector, SelectionKey.OP_ACCEPT ); // register selector
+    private void openServerChannel() {
+        try {
+            selector = Selector.open(); // created once
+            serverSocket = ServerSocketChannel.open(); // open channel
+            serverSocket.socket().bind(new InetSocketAddress("localhost", portNum)); // bind to relevant information
+            System.out.println("Server started on port " + portNum);
+            serverSocket.configureBlocking(false); // blocking is false
+            serverSocket.register(selector, SelectionKey.OP_ACCEPT); // register selector
+        } catch (ClosedChannelException e) {
+            System.out.println("Server channel closed unexpectedly during config. Exiting.");
+            e.printStackTrace();
+            System.exit(-1);
+        } catch (IOException e) {
+            System.out.printf("Server channel configured in bad state: %s. Exiting.", e.getMessage());
+            e.printStackTrace();
+            System.exit(-1);
+        }
     }
 
     // Start the timer to print stats every 20 seconds
@@ -57,40 +64,47 @@ public class Server {
         timer.scheduleAtFixedRate(new ServerStatistics(this), 0, 20000);
     }
 
-    private void waitForConnections() throws IOException {
-        while(stillWaiting){
-            System.out.println("Waiting for connections");
-            selector.select();
-            if ( selector.selectNow() == 0 ) continue;
+    private void waitForConnections() {
+        try {
+            while (stillWaiting) {
+                System.out.println("Waiting for connections");
+                selector.select();
+                if (selector.selectNow() == 0) continue;
                 Iterator<SelectionKey> iter = selector.selectedKeys().iterator();
-                while ( iter.hasNext() ) {
+                while (iter.hasNext()) {
                     SelectionKey key = iter.next();
-                    if (key.isAcceptable()){
-                        registerConnection();
-                    }
-                    else if (key.isReadable()){
-                        readConnectionMessage(key);
-                    }
-                    else if(key.isWritable()){
-                        writeConnectionMessage(key, batches, batchSize);
-                    }
-                    else{                       
+                    if (key.isAcceptable()) {
+                        //create a REGISTER_CLIENT task and give it to TPM.
+                    } else if (key.isReadable()) {
+                        //create a HANDLE_TRAFFIC task and give it to TPM.
+                    } else {
                         System.out.println("Key is not readable or acceptable");
                     }
                 }
-                    iter.remove();
+                iter.remove();
             }
+        } catch (IOException e) {
+            //Not sure if an IOException in this loop leaves the program in a bad state.
+            // Leaving as just a stack trace for now.
+            e.printStackTrace();
+        } catch (ClosedSelectorException e){
+            //If the selector gets closed, the program's over.
+            System.out.println("Selector closed unexpectedly, exiting.");
+            System.exit(-1);
         }
+    }
     
-
+    //depreciated
+    /*
     private void registerConnection() throws IOException{
         clientSocket = serverSocket.accept();
         clientSocket.configureBlocking(false);
         clientSocket.register(selector, SelectionKey.OP_READ);
         System.out.println("A new connection has registered");
-    }
+    }*/
 
-
+    //depreciated
+    /*
     private static void readConnectionMessage(SelectionKey key) throws IOException {
         ByteBuffer readBuffer = ByteBuffer.allocate(256); // allocate buffer size 
         SocketChannel clientSocketR = (SocketChannel) key.channel(); // get the channel key
@@ -107,8 +121,10 @@ public class Server {
             batches.add(packet);
             readBuffer.clear();
         }
-    }
+    }*/
 
+    //depreciated
+    /*
     private static void writeConnectionMessage(SelectionKey key, List<byte[]> batches, int batchSize) throws IOException {
         ByteBuffer writeBuffer = ByteBuffer.allocate(256); // allocate buffer size
         SocketChannel clientSocketW = (SocketChannel) key.channel(); // get the channel key
@@ -120,8 +136,10 @@ public class Server {
             clientSocketW.write(writeBuffer);
             writeBuffer.clear();
         }
-    }
+    }*/
 
+    //depreciated
+    /*
     private static List<byte[]> splitIntoBatches(List<byte[]> batches, int batchSize){
         List<byte[]> batch = new ArrayList<>(batchSize);
         if (batches.size() == batchSize){
@@ -130,7 +148,7 @@ public class Server {
             }
         }
         return batch;
-    }
+    }*/
 
     public synchronized void incrementClientMsgCount(SocketAddress clientAddress, int msgCount) {
         //update the client's message count with supplied
@@ -144,9 +162,9 @@ public class Server {
         return cStats;
     }
 
-    public void runServer() throws IOException{
+    public void runServer() {
         //Selector Init
-        openServerChannel(this.portNum);
+        openServerChannel();
         //Start stats timer
         startStatsTimer();
         //Start listening for clients.
@@ -172,13 +190,7 @@ public class Server {
             System.exit(-1);
         }
         Server server = new Server(pn, bs, bt, tps);
-        try {
-            server.runServer();
-        } catch (IOException e) {
-            System.out.println("Server encountered an IOException while Running. Exiting.");
-            e.printStackTrace();
-            System.exit(-1);
-        }
+        server.runServer();
     }
 
 
