@@ -25,19 +25,14 @@ public class Server implements Runnable {
     private static final Hashing hashDevice = new Hashing();
     private static List<byte[]> batches;
     private final int batchSize;
-    private final int threadPoolSize;
-    private final int batchTime;
     private final int portNum;
     private Hashtable<SocketAddress, Integer> clientStatistics;
     Timer timer;
     private final ThreadPoolManager threadPoolManager;
 
-    // empty constructor currently
     public Server(int pn, int bs, int bt, int tps) throws IOException {
         this.portNum = pn;
         this.batchSize = bs;
-        this.threadPoolSize = tps;
-        this.batchTime = bt;
         this.clientStatistics = new Hashtable<>();
         this.threadPoolManager = new ThreadPoolManager(tps, bs, bt);
         threadPoolManager.start();
