@@ -14,38 +14,51 @@ import cs455.scaling.util.Hashing;
 public class Client {
 
     private final Queue<String> hashed_list = new LinkedList<>();
+    private String serverHostName;
+    private int serverPort, messageRate;
     private static SocketChannel clientSocket;
-    private static ByteBuffer buffer;
+    private final Hashing hashingDevice = new Hashing();
+    private final ByteBuffer writeBuffer = ByteBuffer.allocate(8196);
 
-    public Client() throws IOException {
+    public Client(String serverHostName, int serverPort, int messageRate) {
+        this.serverHostName = serverHostName;
+        this.serverPort = serverPort;
+        this.messageRate = messageRate;
+    }
+
+    public void runClient() {
         // CLIENT TIMER:  5 minutes in milliseconds
         long clientTimeoutDuration = 300000;
         ClientTimer clientTimer = new ClientTimer(clientTimeoutDuration);
         clientTimer.start();
-
         try {
             // connect to the server
-            clientSocket = SocketChannel.open(new InetSocketAddress("localhost", 9900)); //local host will be changed later
-            buffer = ByteBuffer.allocate(256);
+            clientSocket = SocketChannel.open(new InetSocketAddress(serverHostName, serverPort));
+            //TODO: send messages(sendMessageAndCheckResponse()) at rate this.rate
         } catch(IOException e){
-            System.out.println("Problem with allocating buffer or clientSocket will not open");
-            clientSocket.close();
+            System.out.println("ClientSocket will not open");
         }
     }
 
+    //TODO: this method probably needs to be refactored.
+    // (read isn't blocking in this context considering the ThreadPool.)
+    // Maybe handle reads and writes separately?
     private void sendMessageAndCheckResponse() throws IOException {
         byte[] message = generateRandomByteMessage();
-        hashRandomByteMessages(message); // add it to the list (hashed)
-        buffer = ByteBuffer.wrap(message); // add it to buffer
+        //save for read allocate
+        String hashedMessage =  hashRandomByteMessages(message); // add it to the list (hashed)
+        writeBuffer.put(message); // add it to buffer
+        //try to dynamically allocate the SHA1 hash response length.
+        ByteBuffer readBuffer = ByteBuffer.allocate(hashedMessage.getBytes().length);
         try{
-            clientSocket.write(buffer);
-            buffer.clear();
-            clientSocket.read(buffer);
-            String hash_response = new String(buffer.array()).trim();
+            clientSocket.write(writeBuffer);
+            writeBuffer.clear();
+            clientSocket.read(readBuffer);
+            String hash_response = new String(readBuffer.array()).trim();
             boolean hashInTable = checkAndDeleteHash(hash_response);
             // probably need to handle if hashInTable is false
             if (hashInTable){
-                buffer.clear();
+                readBuffer.clear();
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -55,15 +68,15 @@ public class Client {
 
      private byte[] generateRandomByteMessage(){
         Random random = new Random();
-        byte[] byteMessage = new byte[8000];
+        byte[] byteMessage = new byte[8196];
         random.nextBytes(byteMessage);
         return byteMessage;
     }
 
-    private void hashRandomByteMessages(byte[] message) {
-        Hashing hashingDevice = new Hashing();
+    private String hashRandomByteMessages(byte[] message) {
         String hashed_message = hashingDevice.SHA1FromBytes(message);
         hashed_list.add(hashed_message);
+        return hashed_message;
     }
 
     private boolean checkAndDeleteHash(String message){
@@ -77,13 +90,26 @@ public class Client {
         }
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
+        if(args.length != 3){
+            System.out.println("Client expecting args in format: <Server Hostname> <Server Port> <Message rate/s>");
+        }
+        String hostname = args[0];
+        int port = 0, rate = 0;
+        try{
+            port = Integer.parseInt(args[1]);
+            rate = Integer.parseInt(args[2]);
+        } catch (NumberFormatException e) {
+            System.out.printf("Couldn't parse argument as an integer: %s\n", e.getMessage());
+            System.exit(-1);
+        }
+        Client client = new Client(hostname, port, rate);
+        client.runClient();
+        /*
         for (int i=0; i<100; i++) {
             Client client = new Client();
             client.sendMessageAndCheckResponse();
-        }
-
-
+        }*/
     }
 }
 
