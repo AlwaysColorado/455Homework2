@@ -7,7 +7,6 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.Selector;
-import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 import cs455.scaling.threadpool.ThreadPool;
@@ -59,7 +58,7 @@ public class Server implements Runnable {
         timer.scheduleAtFixedRate(new ServerStatistics(this), 0, 20000);
     }
 
-    private void waitForConnections() throws IOException, NoSuchAlgorithmException {
+    private void waitForConnections() throws IOException {
         while(stillWaiting){
             System.out.println("Waiting for connections");
             selector.select();
@@ -111,7 +110,7 @@ public class Server implements Runnable {
         }
     }
 
-    private static void writeConnectionMessage(SelectionKey key, List<byte[]> batches, int batchSize) throws IOException, NoSuchAlgorithmException {
+    private static void writeConnectionMessage(SelectionKey key, List<byte[]> batches, int batchSize) throws IOException {
         ByteBuffer writeBuffer = ByteBuffer.allocate(256); // allocate buffer size
         SocketChannel clientSocketW = (SocketChannel) key.channel(); // get the channel key
         List<byte[]> batch = splitIntoBatches(batches, batchSize);
@@ -152,13 +151,11 @@ public class Server implements Runnable {
             waitForConnections();
         } catch (IOException e) {
             e.printStackTrace();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
         }
     }
 
 
-    public static void main(String[] args) throws IOException, NoSuchAlgorithmException, InterruptedException {
+    public static void main(String[] args) throws IOException, InterruptedException {
         int pn = Integer.parseInt(args[0]);
         int bs = Integer.parseInt(args[1]);
         int bt = Integer.parseInt(args[2]);

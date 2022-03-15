@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
-import java.security.NoSuchAlgorithmException;
 
 public class HANDLE_TRAFFIC extends Task{
     //The key this will need to both read from and write to the client.
@@ -48,9 +47,6 @@ public class HANDLE_TRAFFIC extends Task{
             //This most likely means either the client died or the read/write failed.
             // move on, discard task.
             //e.printStackTrace();
-        } catch (NoSuchAlgorithmException e) {
-            //refactor to handle exception in hashing.
-            e.printStackTrace();
         }
     }
 }

@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
-import java.security.NoSuchAlgorithmException;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Random;
@@ -34,7 +33,7 @@ public class Client {
         }
     }
 
-    private void sendMessageAndCheckResponse() throws NoSuchAlgorithmException, IOException {
+    private void sendMessageAndCheckResponse() throws IOException {
         byte[] message = generateRandomByteMessage();
         hashRandomByteMessages(message); // add it to the list (hashed)
         buffer = ByteBuffer.wrap(message); // add it to buffer
@@ -61,7 +60,7 @@ public class Client {
         return byteMessage;
     }
 
-    private void hashRandomByteMessages(byte[] message) throws NoSuchAlgorithmException {
+    private void hashRandomByteMessages(byte[] message) {
         Hashing hashingDevice = new Hashing();
         String hashed_message = hashingDevice.SHA1FromBytes(message);
         hashed_list.add(hashed_message);
@@ -78,7 +77,7 @@ public class Client {
         }
     }
 
-    public static void main(String[] args) throws NoSuchAlgorithmException, IOException {
+    public static void main(String[] args) throws IOException {
         for (int i=0; i<100; i++) {
             Client client = new Client();
             client.sendMessageAndCheckResponse();
