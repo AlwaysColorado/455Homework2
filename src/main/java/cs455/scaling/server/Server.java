@@ -33,7 +33,7 @@ public class Server implements Runnable {
     private final ThreadPoolManager threadPoolManager;
 
     // empty constructor currently
-    public Server(int pn, int bs, int bt, int tps) throws IOException {
+    public Server(int pn, int bs, int bt, int tps) {
         this.portNum = pn;
         this.batchSize = bs;
         this.threadPoolSize = tps;
@@ -155,7 +155,7 @@ public class Server implements Runnable {
     }
 
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         int pn = 0, bs = 0, bt = 0, tps = 0;
         if(args.length != 4){
             System.out.println("Server expecting arg format: <port number> <batch size> " +
@@ -173,7 +173,13 @@ public class Server implements Runnable {
             System.exit(-1);
         }
         Server server = new Server(pn, bs, bt, tps);
-        server.openServerChannel(pn);
+        try {
+            server.openServerChannel(pn);
+        } catch (IOException e) {
+            System.out.println("Server encountered an IOException while opening its channel. Exiting.");
+            e.printStackTrace();
+            System.exit(-1);
+        }
         server.startStatsTimer();
         ThreadPool tp = new ThreadPool(tps);
         while(server.stillRunning){
