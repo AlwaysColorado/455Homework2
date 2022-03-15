@@ -14,7 +14,7 @@ import cs455.scaling.threadpool.ThreadPoolManager;
 import cs455.scaling.util.Hashing;
 import java.nio.ByteBuffer;
 
-public class Server implements Runnable {
+public class Server {
 
     private ServerSocketChannel serverSocket;
     private SocketChannel clientSocket;
@@ -32,7 +32,6 @@ public class Server implements Runnable {
     Timer timer;
     private final ThreadPoolManager threadPoolManager;
 
-    // empty constructor currently
     public Server(int pn, int bs, int bt, int tps) {
         this.portNum = pn;
         this.batchSize = bs;
@@ -145,13 +144,13 @@ public class Server implements Runnable {
         return cStats;
     }
 
-    @Override
-    public void run() {
-        try {
-            waitForConnections();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public void runServer() throws IOException{
+        //Selector Init
+        openServerChannel(this.portNum);
+        //Start stats timer
+        startStatsTimer();
+        //Start listening for clients.
+        waitForConnections();
     }
 
 
@@ -174,20 +173,11 @@ public class Server implements Runnable {
         }
         Server server = new Server(pn, bs, bt, tps);
         try {
-            server.openServerChannel(pn);
+            server.runServer();
         } catch (IOException e) {
-            System.out.println("Server encountered an IOException while opening its channel. Exiting.");
+            System.out.println("Server encountered an IOException while Running. Exiting.");
             e.printStackTrace();
             System.exit(-1);
-        }
-        server.startStatsTimer();
-        ThreadPool tp = new ThreadPool(tps);
-        while(server.stillRunning){
-            //refactor 
-            //tp.executeThreadPool(server);
-            if (!server.stillRunning){
-                tp.killThreads();
-            }
         }
     }
 
