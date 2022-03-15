@@ -1,6 +1,6 @@
 package cs455.scaling.client;
 
-public class ClientTimer implements Runnable {
+public class ClientTimer extends Thread {
 
     private final long time;
 
