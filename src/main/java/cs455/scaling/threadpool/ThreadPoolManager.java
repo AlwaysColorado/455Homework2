@@ -5,7 +5,7 @@ import cs455.scaling.tasks.Task;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class ThreadPoolManager implements Runnable{
+public class ThreadPoolManager extends Thread{
 
     private final ThreadPool threadPool;
     private LinkedBlockingQueue<Task> taskList;
