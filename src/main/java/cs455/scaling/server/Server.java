@@ -29,7 +29,6 @@ public class Server implements Runnable {
     private final int batchTime;
     private final int portNum;
     private Hashtable<SocketAddress, Integer> clientStatistics;
-    private int messageCountSum = 0;
     Timer timer;
     private final ThreadPoolManager threadPoolManager;
 
@@ -137,7 +136,6 @@ public class Server implements Runnable {
     public synchronized void incrementClientMsgCount(SocketAddress clientAddress, int msgCount) {
         //update the client's message count with supplied
         clientStatistics.put(clientAddress, clientStatistics.get(clientAddress) + msgCount);
-        this.messageCountSum += msgCount;
     }
 
     public synchronized Hashtable<SocketAddress, Integer> getClientStatistics(){
