@@ -53,11 +53,13 @@ public class Client {
         try{
             clientSocket.write(buffer);
             buffer.clear();
+            incrementSent();
             clientSocket.read(buffer);
             String hash_response = new String(buffer.array()).trim();
             boolean hashInTable = checkAndDeleteHash(hash_response);
             // probably need to handle if hashInTable is false
             if (hashInTable){
+                inrcementReceived();
                 buffer.clear();
             }
         } catch (IOException e) {
@@ -66,7 +68,17 @@ public class Client {
         }
     }
 
-     private byte[] generateRandomByteMessage(){
+    private synchronized void incrementSent() {
+        totalSent ++;
+    }
+
+    private synchronized void inrcementReceived() {
+        totalReceived ++;
+    }
+
+
+
+    private byte[] generateRandomByteMessage(){
         Random random = new Random();
         byte[] byteMessage = new byte[8000];
         random.nextBytes(byteMessage);
@@ -82,6 +94,7 @@ public class Client {
     private boolean checkAndDeleteHash(String message){
         if (hashed_list.contains(message)){
             hashed_list.remove(message);
+            incrementSent();
             return true;
         }
         else{
