@@ -14,10 +14,7 @@ public class Server {
     private ServerSocketChannel serverSocket;
     private AtomicBoolean stillWaiting = new AtomicBoolean(true);
     private Selector selector;
-    private final int batchSize;
-    private final int threadPoolSize;
-    private final int batchTime;
-    private final int portNum;
+    private final int batchSize, threadPoolSize, batchTime, portNum;
     private Hashtable<SocketAddress, Integer> clientStatistics;
     private int messageCountSum = 0;
     Timer timer;

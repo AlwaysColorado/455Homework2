@@ -14,8 +14,8 @@ import cs455.scaling.util.Hashing;
 public class Client {
 
     private final Queue<String> hashed_list = new LinkedList<>();
-    private String serverHostName;
-    private int serverPort, messageRate;
+    private final String serverHostName;
+    private final int serverPort, messageRate;
     private static SocketChannel clientSocket;
     private final Hashing hashingDevice = new Hashing();
     private final ByteBuffer writeBuffer = ByteBuffer.allocate(8196);
