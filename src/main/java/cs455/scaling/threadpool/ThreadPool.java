@@ -18,7 +18,7 @@ public class ThreadPool extends Thread {
     private final int tps;
     private final Worker[] workers;
 
-    public ThreadPool(int tps) throws InterruptedException {
+    public ThreadPool(int tps) {
         // create new blockingQueue
         this.tps = tps;
         this.workers = new Worker[tps];

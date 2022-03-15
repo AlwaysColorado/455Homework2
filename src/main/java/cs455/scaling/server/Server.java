@@ -25,8 +25,8 @@ public class Server implements Runnable {
     private static final Hashing hashDevice = new Hashing();
     private static List<byte[]> batches;
     private final int batchSize;
-//    private final int threadPoolSize;
-//    private final int batchTime;
+    private final int threadPoolSize;
+    private final int batchTime;
     private final int portNum;
     private Hashtable<SocketAddress, Integer> clientStatistics;
     private int messageCountSum = 0;
