@@ -155,11 +155,23 @@ public class Server implements Runnable {
     }
 
 
-    public static void main(String[] args) throws IOException, InterruptedException {
-        int pn = Integer.parseInt(args[0]);
-        int bs = Integer.parseInt(args[1]);
-        int bt = Integer.parseInt(args[2]);
-        int tps = Integer.parseInt(args[3]);
+    public static void main(String[] args) throws IOException {
+        int pn = 0, bs = 0, bt = 0, tps = 0;
+        if(args.length != 4){
+            System.out.println("Server expecting arg format: <port number> <batch size> " +
+                    "<batch time> <thread pool size>");
+            System.exit(-1);
+        }
+        try {
+            pn = Integer.parseInt(args[0]);
+            bs = Integer.parseInt(args[1]);
+            bt = Integer.parseInt(args[2]);
+            tps = Integer.parseInt(args[3]);
+        } catch (NumberFormatException e) {
+            System.out.println("Couldn't parse an arg as an Integer. Expected Format: <port number> <batch size> " +
+                    "<batch time> <thread pool size>");
+            System.exit(-1);
+        }
         Server server = new Server(pn, bs, bt, tps);
         server.openServerChannel(pn);
         server.startStatsTimer();
