@@ -21,7 +21,7 @@ public class Server {
     private final ThreadPoolManager threadPoolManager;
 
     // empty constructor currently
-    public Server(int pn, int bs, int bt, int tps) throws IOException {
+    public Server(int pn, int bs, int bt, int tps) {
         this.portNum = pn;
         this.batchSize = bs;
         this.threadPoolSize = tps;
