@@ -31,10 +31,6 @@ public class Client {
     }
 
     public void runClient() {
-        // CLIENT TIMER:  5 minutes in milliseconds
-        long clientTimeoutDuration = 300000;
-        ClientTimer clientTimer = new ClientTimer(clientTimeoutDuration);
-        clientTimer.start();
         try {
             // connect to the server
             clientSocket = SocketChannel.open(new InetSocketAddress(serverHostName, serverPort));
@@ -54,7 +50,6 @@ public class Client {
         // PRINT TIMER: Print totals every 20 seconds
         timer = new Timer();
         timer.scheduleAtFixedRate(new ClientPrintTimer(this), 0, 20000);
-
     }
 
     //TODO: this method probably needs to be refactored.
