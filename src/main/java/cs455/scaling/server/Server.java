@@ -14,14 +14,13 @@ public class Server {
     private ServerSocketChannel serverSocket;
     private AtomicBoolean stillWaiting = new AtomicBoolean(true);
     private Selector selector;
-    private final int batchSize, threadPoolSize, batchTime, portNum;
+    private final int portNum;
     private Hashtable<SocketAddress, Integer> clientStatistics;
     Timer timer;
     private final ThreadPoolManager threadPoolManager;
 
     public Server(int pn, int bs, int bt, int tps) {
         this.portNum = pn;
-        this.batchSize = bs;
         this.clientStatistics = new Hashtable<>();
         this.threadPoolManager = new ThreadPoolManager(tps, bs, bt);
         threadPoolManager.start();
