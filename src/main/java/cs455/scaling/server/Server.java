@@ -16,16 +16,12 @@ public class Server {
     private Selector selector;
     private final int batchSize, threadPoolSize, batchTime, portNum;
     private Hashtable<SocketAddress, Integer> clientStatistics;
-    private int messageCountSum = 0;
     Timer timer;
     private final ThreadPoolManager threadPoolManager;
 
-    // empty constructor currently
     public Server(int pn, int bs, int bt, int tps) {
         this.portNum = pn;
         this.batchSize = bs;
-        this.threadPoolSize = tps;
-        this.batchTime = bt;
         this.clientStatistics = new Hashtable<>();
         this.threadPoolManager = new ThreadPoolManager(tps, bs, bt);
         threadPoolManager.start();
@@ -145,7 +141,6 @@ public class Server {
     public synchronized void incrementClientMsgCount(SocketAddress clientAddress, int msgCount) {
         //update the client's message count with supplied
         clientStatistics.put(clientAddress, clientStatistics.get(clientAddress) + msgCount);
-        this.messageCountSum += msgCount;
     }
 
     public void registerOneClient(SocketAddress clientAddress) {
