@@ -28,7 +28,7 @@ public class Server implements Runnable {
     private final int threadPoolSize;
     private final int batchTime;
     private final int portNum;
-    private Hashtable<SocketAddress, Integer> clientStatistics;
+    private final Hashtable<SocketAddress, Integer> clientStatistics;
     private int messageCountSum = 0;
     Timer timer;
     private final ThreadPoolManager threadPoolManager;
@@ -138,6 +138,22 @@ public class Server implements Runnable {
         //update the client's message count with supplied
         clientStatistics.put(clientAddress, clientStatistics.get(clientAddress) + msgCount);
         this.messageCountSum += msgCount;
+    }
+
+    public void registerOneClient(SocketAddress clientAddress) {
+        synchronized (clientStatistics) {
+            clientStatistics.put(clientAddress, 0);
+        }
+    }
+
+    public void deregisterClient(SocketAddress clientAddress) {
+        //if the clientAddress is null, the socket closed without a worker thread being able to read the address.
+        // don't do anything. (I don't really know how to get around this problem...)
+        if(clientAddress == null)
+            return;
+        synchronized (clientStatistics){
+            clientStatistics.remove(clientAddress);
+        }
     }
 
     public synchronized Hashtable<SocketAddress, Integer> getClientStatistics(){
