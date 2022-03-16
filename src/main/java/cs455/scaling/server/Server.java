@@ -20,7 +20,8 @@ public class Server {
     Timer timer;
     private final ThreadPoolManager threadPoolManager;
 
-    public Server(int pn, int bs, int bt, int tps) {
+    // empty constructor currently
+    public Server(int pn, int bs, int bt, int tps) throws IOException {
         this.portNum = pn;
         this.batchSize = bs;
         this.threadPoolSize = tps;
@@ -84,7 +85,7 @@ public class Server {
             System.exit(-1);
         }
     }
-    
+
     //depreciated
     /*
     private void registerConnection() throws IOException{
@@ -145,6 +146,22 @@ public class Server {
         //update the client's message count with supplied
         clientStatistics.put(clientAddress, clientStatistics.get(clientAddress) + msgCount);
         this.messageCountSum += msgCount;
+    }
+
+    public void registerOneClient(SocketAddress clientAddress) {
+        synchronized (clientStatistics) {
+            clientStatistics.put(clientAddress, 0);
+        }
+    }
+
+    public void deregisterClient(SocketAddress clientAddress) {
+        //if the clientAddress is null, the socket closed without a worker thread being able to read the address.
+        // don't do anything. (I don't really know how to get around this problem...)
+        if(clientAddress == null)
+            return;
+        synchronized (clientStatistics){
+            clientStatistics.remove(clientAddress);
+        }
     }
 
     public synchronized Hashtable<SocketAddress, Integer> getClientStatistics(){
