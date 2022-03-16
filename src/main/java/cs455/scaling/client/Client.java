@@ -19,6 +19,10 @@ public class Client {
     private static SocketChannel clientSocket;
     private final Hashing hashingDevice = new Hashing();
     private final ByteBuffer writeBuffer = ByteBuffer.allocate(8196);
+    private static ByteBuffer buffer;
+    private long totalSent;
+    private long totalReceived;
+    Timer timer;
 
     public Client(String serverHostName, int serverPort, int messageRate) {
         this.serverHostName = serverHostName;
@@ -38,6 +42,19 @@ public class Client {
         } catch(IOException e){
             System.out.println("ClientSocket will not open");
         }
+
+        totalSent = 0;
+        totalReceived = 0;
+
+        // CLIENT TIMER:  5 minutes in milliseconds
+        long clientTimeoutDuration = 300000;
+        ClientTimer clientTimer = new ClientTimer(clientTimeoutDuration);
+        clientTimer.start();
+
+        // PRINT TIMER: Print totals every 20 seconds
+        timer = new Timer();
+        timer.scheduleAtFixedRate(new ClientPrintTimer(this), 0, 20000);
+
     }
 
     //TODO: this method probably needs to be refactored.
@@ -53,11 +70,13 @@ public class Client {
         try{
             clientSocket.write(writeBuffer);
             writeBuffer.clear();
+            incrementSent();
             clientSocket.read(readBuffer);
             String hash_response = new String(readBuffer.array()).trim();
             boolean hashInTable = checkAndDeleteHash(hash_response);
             // probably need to handle if hashInTable is false
             if (hashInTable){
+                inrcementReceived();
                 readBuffer.clear();
             }
         } catch (IOException e) {
@@ -66,7 +85,17 @@ public class Client {
         }
     }
 
-     private byte[] generateRandomByteMessage(){
+    private synchronized void incrementSent() {
+        totalSent ++;
+    }
+
+    private synchronized void inrcementReceived() {
+        totalReceived ++;
+    }
+
+
+
+    private byte[] generateRandomByteMessage(){
         Random random = new Random();
         byte[] byteMessage = new byte[8196];
         random.nextBytes(byteMessage);
@@ -88,6 +117,18 @@ public class Client {
             System.out.println("Hash not found" + message);
             return false;
         }
+    }
+
+    public synchronized long getTotalSent() {
+        long sent = totalSent;
+        totalSent = 0;
+        return sent;
+    }
+
+    public synchronized long getTotalReceived() {
+        long received = totalReceived;
+        totalReceived = 0;
+        return received;
     }
 
     public static void main(String[] args) {
