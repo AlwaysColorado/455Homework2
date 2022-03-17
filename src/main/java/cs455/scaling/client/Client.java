@@ -129,6 +129,7 @@ public class Client {
     public static void main(String[] args) {
         if(args.length != 3){
             System.out.println("Client expecting args in format: <Server Hostname> <Server Port> <Message rate/s>");
+            System.exit(-1);
         }
         String hostname = args[0];
         int port = 0, rate = 0;
