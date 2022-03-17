@@ -15,7 +15,7 @@ public class Server {
     private AtomicBoolean stillWaiting = new AtomicBoolean(true);
     private Selector selector;
     private final int portNum;
-    private Hashtable<SocketAddress, Integer> clientStatistics;
+    private final Hashtable<SocketAddress, Integer> clientStatistics;
     Timer timer;
     private final ThreadPoolManager threadPoolManager;
 
