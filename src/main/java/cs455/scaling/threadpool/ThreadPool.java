@@ -4,7 +4,6 @@ import cs455.scaling.tasks.Task;
 
 import java.util.LinkedList;
 import java.util.Queue;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -82,13 +81,12 @@ public class ThreadPool extends Thread {
 
 
     private class Worker extends Thread{
-        private Task task;
         private AtomicBoolean isAvailable = new AtomicBoolean(false);
         private AtomicBoolean running = new AtomicBoolean(false);
         private LinkedBlockingQueue<Task> taskList;
 
         public Worker() {
-            taskList = new LinkedBlockingQueue<Task>();
+            taskList = new LinkedBlockingQueue<>();
         }
         private void killIndividualThread(){
             running.set(false);
@@ -116,14 +114,14 @@ public class ThreadPool extends Thread {
                         }
                     }
                 }
-                task = taskList.poll();
+                Task task = taskList.poll();
                 assert task != null;
                 System.out.println("Worker Thread: Thread starting");
                 task.executeTask(); // run the task
                 System.out.println("Worker Thread: Worker has finished a task"); // message for testing can be removed later
+            }
+
         }
 
     }
-
-}
 }
