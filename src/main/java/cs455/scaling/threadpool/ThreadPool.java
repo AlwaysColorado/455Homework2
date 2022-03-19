@@ -5,13 +5,14 @@ import cs455.scaling.tasks.Task;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ThreadPool extends Thread {
     // instantiate blockingQueue
-    private BlockingQueue<Task> taskList;
+    private LinkedBlockingQueue<Task> taskList;
     private final AtomicBoolean isKillThreads = new AtomicBoolean(false);
-    private final Queue<BlockingQueue<Task>> batchList = new LinkedList<>();
+    private final Queue<LinkedBlockingQueue<Task>> batchList = new LinkedList<>();
     private final AtomicBoolean pullTaskList = new AtomicBoolean(false);
     private final int tps;
     private final Worker[] workers;
@@ -49,7 +50,7 @@ public class ThreadPool extends Thread {
     }
 
     // this helper method will check if all the workers are available and add it to the
-    public void workerHelper(BlockingQueue<Task> taskList){
+    public void workerHelper(LinkedBlockingQueue<Task> taskList){
         boolean foundWorker = false;
         int counter = 0;
         while(!foundWorker){
@@ -68,7 +69,7 @@ public class ThreadPool extends Thread {
     }
 
 
-    public void addTaskList(BlockingQueue<Task> taskList){
+    public void addTaskList(LinkedBlockingQueue<Task> taskList){
         synchronized (batchList){
             batchList.add(taskList);
             batchList.notify();
@@ -84,13 +85,16 @@ public class ThreadPool extends Thread {
         private Task task;
         private AtomicBoolean isAvailable = new AtomicBoolean(false);
         private AtomicBoolean running = new AtomicBoolean(false);
-        private BlockingQueue<Task> taskList;
+        private LinkedBlockingQueue<Task> taskList;
 
+        public Worker() {
+            taskList = new LinkedBlockingQueue<Task>();
+        }
         private void killIndividualThread(){
             running.set(false);
         }
 
-        public void addTaskList(BlockingQueue<Task> tl){
+        public void addTaskList(LinkedBlockingQueue<Task> tl){
             synchronized (taskList) {
                 this.taskList = tl;
                 this.taskList.notify();
@@ -112,11 +116,11 @@ public class ThreadPool extends Thread {
                         }
                     }
                 }
-                    task = taskList.poll();
-                    assert task != null;
-                    System.out.println("Worker Thread: Thread starting");
-                    task.executeTask(); // run the task
-                    System.out.println("Worker Thread: Worker has finished a task"); // message for testing can be removed later
+                task = taskList.poll();
+                assert task != null;
+                System.out.println("Worker Thread: Thread starting");
+                task.executeTask(); // run the task
+                System.out.println("Worker Thread: Worker has finished a task"); // message for testing can be removed later
         }
 
     }
