@@ -2,10 +2,8 @@ package cs455.scaling.threadpool;
 
 import cs455.scaling.tasks.Task;
 
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Queue;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 

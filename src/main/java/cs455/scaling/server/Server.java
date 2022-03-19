@@ -3,48 +3,46 @@ package cs455.scaling.server;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
-import java.nio.channels.Selector;
-import java.security.NoSuchAlgorithmException;
+import java.nio.channels.*;
 import java.util.*;
 
-import cs455.scaling.threadpool.ThreadPool;
 import cs455.scaling.threadpool.ThreadPoolManager;
-import cs455.scaling.util.Hashing;
-import java.nio.ByteBuffer;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-public class Server implements Runnable {
+public class Server {
 
     private ServerSocketChannel serverSocket;
-    private SocketChannel clientSocket;
-    private boolean stillWaiting = true;
-    private boolean stillRunning = true;
+    private AtomicBoolean stillWaiting = new AtomicBoolean(true);
     private Selector selector;
-    private static final Hashing hashDevice = new Hashing();
-    private static List<byte[]> batches;
-    private final int batchSize;
     private final int portNum;
     private final Hashtable<SocketAddress, Integer> clientStatistics;
     Timer timer;
     private final ThreadPoolManager threadPoolManager;
 
-    public Server(int pn, int bs, int bt, int tps) throws IOException {
+    public Server(int pn, int bs, int bt, int tps) {
         this.portNum = pn;
-        this.batchSize = bs;
         this.clientStatistics = new Hashtable<>();
         this.threadPoolManager = new ThreadPoolManager(tps, bs, bt);
         threadPoolManager.start();
     }
 
-    private void openServerChannel(int pn) throws IOException{
-        selector = Selector.open(); // created once
-        serverSocket = ServerSocketChannel.open(); // open channel
-        serverSocket.socket().bind( new InetSocketAddress("localhost", pn)); // bind to relevant information
-        System.out.println("Server started on port " + pn);
-        serverSocket.configureBlocking( false ); // blocking is false
-        serverSocket.register(selector, SelectionKey.OP_ACCEPT ); // register selector
+    private void openServerChannel() {
+        try {
+            selector = Selector.open(); // created once
+            serverSocket = ServerSocketChannel.open(); // open channel
+            serverSocket.socket().bind(new InetSocketAddress("localhost", portNum)); // bind to relevant information
+            System.out.println("Server started on port " + portNum);
+            serverSocket.configureBlocking(false); // blocking is false
+            serverSocket.register(selector, SelectionKey.OP_ACCEPT); // register selector
+        } catch (ClosedChannelException e) {
+            System.out.println("Server channel closed unexpectedly during config. Exiting.");
+            e.printStackTrace();
+            System.exit(-1);
+        } catch (IOException e) {
+            System.out.printf("Server channel configured in bad state: %s. Exiting.", e.getMessage());
+            e.printStackTrace();
+            System.exit(-1);
+        }
     }
 
     // Start the timer to print stats every 20 seconds
@@ -53,40 +51,47 @@ public class Server implements Runnable {
         timer.scheduleAtFixedRate(new ServerStatistics(this), 0, 20000);
     }
 
-    private void waitForConnections() throws IOException, NoSuchAlgorithmException {
-        while(stillWaiting){
-            System.out.println("Waiting for connections");
-            selector.select();
-            if ( selector.selectNow() == 0 ) continue;
+    private void waitForConnections() {
+        try {
+            while (stillWaiting.get()) {
+                System.out.println("Waiting for connections");
+                selector.select();
+                if (selector.selectNow() == 0) continue;
                 Iterator<SelectionKey> iter = selector.selectedKeys().iterator();
-                while ( iter.hasNext() ) {
+                while (iter.hasNext()) {
                     SelectionKey key = iter.next();
-                    if (key.isAcceptable()){
-                        registerConnection();
-                    }
-                    else if (key.isReadable()){
-                        readConnectionMessage(key);
-                    }
-                    else if(key.isWritable()){
-                        writeConnectionMessage(key, batches, batchSize);
-                    }
-                    else{                       
+                    if (key.isAcceptable()) {
+                        //create a REGISTER_CLIENT task and give it to TPM.
+                    } else if (key.isReadable()) {
+                        //create a HANDLE_TRAFFIC task and give it to TPM.
+                    } else {
                         System.out.println("Key is not readable or acceptable");
                     }
                 }
-                    iter.remove();
+                iter.remove();
             }
+        } catch (IOException e) {
+            //Not sure if an IOException in this loop leaves the program in a bad state.
+            // Leaving as just a stack trace for now.
+            e.printStackTrace();
+        } catch (ClosedSelectorException e){
+            //If the selector gets closed, the program's over.
+            System.out.println("Selector closed unexpectedly, exiting.");
+            System.exit(-1);
         }
-    
+    }
 
+    //depreciated
+    /*
     private void registerConnection() throws IOException{
         clientSocket = serverSocket.accept();
         clientSocket.configureBlocking(false);
         clientSocket.register(selector, SelectionKey.OP_READ);
         System.out.println("A new connection has registered");
-    }
+    }*/
 
-
+    //depreciated
+    /*
     private static void readConnectionMessage(SelectionKey key) throws IOException {
         ByteBuffer readBuffer = ByteBuffer.allocate(256); // allocate buffer size 
         SocketChannel clientSocketR = (SocketChannel) key.channel(); // get the channel key
@@ -103,9 +108,11 @@ public class Server implements Runnable {
             batches.add(packet);
             readBuffer.clear();
         }
-    }
+    }*/
 
-    private static void writeConnectionMessage(SelectionKey key, List<byte[]> batches, int batchSize) throws IOException, NoSuchAlgorithmException {
+    //depreciated
+    /*
+    private static void writeConnectionMessage(SelectionKey key, List<byte[]> batches, int batchSize) throws IOException {
         ByteBuffer writeBuffer = ByteBuffer.allocate(256); // allocate buffer size
         SocketChannel clientSocketW = (SocketChannel) key.channel(); // get the channel key
         List<byte[]> batch = splitIntoBatches(batches, batchSize);
@@ -116,8 +123,10 @@ public class Server implements Runnable {
             clientSocketW.write(writeBuffer);
             writeBuffer.clear();
         }
-    }
+    }*/
 
+    //depreciated
+    /*
     private static List<byte[]> splitIntoBatches(List<byte[]> batches, int batchSize){
         List<byte[]> batch = new ArrayList<>(batchSize);
         if (batches.size() == batchSize){
@@ -126,7 +135,7 @@ public class Server implements Runnable {
             }
         }
         return batch;
-    }
+    }*/
 
     public synchronized void incrementClientMsgCount(SocketAddress clientAddress, int msgCount) {
         //update the client's message count with supplied
@@ -155,34 +164,39 @@ public class Server implements Runnable {
         return cStats;
     }
 
-    @Override
-    public void run() {
-        try {
-            waitForConnections();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
+    public void runServer() {
+        //Selector Init
+        openServerChannel();
+        //Start stats timer
+        startStatsTimer();
+        //Start listening for clients.
+        waitForConnections();
+    }
+
+    public void killServer(){
+        stillWaiting.set(false);
     }
 
 
-    public static void main(String[] args) throws IOException, NoSuchAlgorithmException, InterruptedException {
-        int pn = Integer.parseInt(args[0]);
-        int bs = Integer.parseInt(args[1]);
-        int bt = Integer.parseInt(args[2]);
-        int tps = Integer.parseInt(args[3]);
-        Server server = new Server(pn, bs, bt, tps);
-        server.openServerChannel(pn);
-        server.startStatsTimer();
-        ThreadPool tp = new ThreadPool(tps);
-        while(server.stillRunning){
-            //refactor 
-            //tp.executeThreadPool(server);
-            if (!server.stillRunning){
-                tp.killThreads();
-            }
+    public static void main(String[] args) {
+        int pn = 0, bs = 0, bt = 0, tps = 0;
+        if(args.length != 4){
+            System.out.println("Server expecting arg format: <port number> <batch size> " +
+                    "<batch time> <thread pool size>");
+            System.exit(-1);
         }
+        try {
+            pn = Integer.parseInt(args[0]);
+            bs = Integer.parseInt(args[1]);
+            bt = Integer.parseInt(args[2]);
+            tps = Integer.parseInt(args[3]);
+        } catch (NumberFormatException e) {
+            System.out.println("Couldn't parse an arg as an Integer. Expected Format: <port number> <batch size> " +
+                    "<batch time> <thread pool size>");
+            System.exit(-1);
+        }
+        Server server = new Server(pn, bs, bt, tps);
+        server.runServer();
     }
 
 

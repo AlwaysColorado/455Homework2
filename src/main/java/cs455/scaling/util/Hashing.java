@@ -12,9 +12,15 @@ public class Hashing{
 
     }
 
-    public String SHA1FromBytes(byte[] data) throws NoSuchAlgorithmException {
+    public String SHA1FromBytes(byte[] data) {
         // create digest with SHA1. I think 256 would be be better but need to check specifications 
-        MessageDigest digest = MessageDigest.getInstance("SHA1"); 
+        MessageDigest digest = null;
+        try {
+            digest = MessageDigest.getInstance("SHA1");
+        } catch (NoSuchAlgorithmException e) {
+            System.out.println("Error in hashing algorithm, SHA1 wasn't found.");
+            e.printStackTrace();
+        }
         byte[] hash  = digest.digest(data); 
         // get the hash number
         BigInteger hashInt = new BigInteger(1, hash);

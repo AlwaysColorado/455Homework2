@@ -8,7 +8,6 @@ import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
-import java.security.NoSuchAlgorithmException;
 
 public class HANDLE_TRAFFIC extends Task{
     //The key this will need to both read from and write to the client.
@@ -62,9 +61,6 @@ public class HANDLE_TRAFFIC extends Task{
             // if the client isn't in the cloud anymore, discard it from the Hashtable.
             parent.deregisterClient(clientAddress);
             //e.printStackTrace();
-        } catch (NoSuchAlgorithmException e) {
-            //refactor to handle exception in hashing.
-            e.printStackTrace();
         }
     }
 }
