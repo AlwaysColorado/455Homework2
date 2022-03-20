@@ -8,7 +8,6 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Random;
 import java.util.Timer;
-
 import cs455.scaling.util.Hashing;
 
 public class Client {
@@ -22,7 +21,8 @@ public class Client {
     private static ByteBuffer buffer;
     private long totalSent;
     private long totalReceived;
-    Timer timer;
+    Timer timerForPrint;
+    Timer timerForMessage;
 
     public Client(String serverHostName, int serverPort, int messageRate) {
         this.serverHostName = serverHostName;
@@ -30,7 +30,7 @@ public class Client {
         this.messageRate = messageRate;
     }
 
-    public void runClient() {
+    public void runClient()  {
         try {
             // connect to the server
             clientSocket = SocketChannel.open(new InetSocketAddress(serverHostName, serverPort));
@@ -48,35 +48,84 @@ public class Client {
         clientTimer.start();
 
         // PRINT TIMER: Print totals every 20 seconds
-        timer = new Timer();
-        timer.scheduleAtFixedRate(new ClientPrintTimer(this), 0, 20000);
+        timerForPrint = new Timer();
+        timerForPrint.scheduleAtFixedRate(new ClientPrintTimer(this), 0, 20000);
+
+        // SEND MESSAGE TIMER: Send messages at messageRate
+        timerForMessage = new Timer();
+        timerForMessage.scheduleAtFixedRate(new ClientMessageTimer(this), 0, 1000/messageRate);
+
+        // CHECK FOR MESSAGES
+        checkMessages();
+
     }
 
     //TODO: this method probably needs to be refactored.
     // (read isn't blocking in this context considering the ThreadPool.)
     // Maybe handle reads and writes separately?
-    private void sendMessageAndCheckResponse() throws IOException {
+//    private void sendMessageAndCheckResponse() throws IOException {
+//        byte[] message = generateRandomByteMessage();
+//        //save for read allocate
+//        String hashedMessage =  hashRandomByteMessages(message); // add it to the list (hashed)
+//        writeBuffer.put(message); // add it to buffer
+//        //try to dynamically allocate the SHA1 hash response length.
+//        ByteBuffer readBuffer = ByteBuffer.allocate(hashedMessage.getBytes().length);
+//        try{
+//            clientSocket.write(writeBuffer);
+//            writeBuffer.clear();
+//            incrementSent();
+//            clientSocket.read(readBuffer);
+//            String hash_response = new String(readBuffer.array()).trim();
+//            boolean hashInTable = checkAndDeleteHash(hash_response);
+//            // probably need to handle if hashInTable is false
+//            if (hashInTable){
+//                inrcementReceived();
+//                readBuffer.clear();
+//            }
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//            clientSocket.close();
+//        }
+//    }
+
+    public void sendMessages() throws IOException {
         byte[] message = generateRandomByteMessage();
-        //save for read allocate
-        String hashedMessage =  hashRandomByteMessages(message); // add it to the list (hashed)
+        hashRandomByteMessages(message); // add it to the list (hashed)
         writeBuffer.put(message); // add it to buffer
-        //try to dynamically allocate the SHA1 hash response length.
-        ByteBuffer readBuffer = ByteBuffer.allocate(hashedMessage.getBytes().length);
-        try{
+        try {
             clientSocket.write(writeBuffer);
             writeBuffer.clear();
             incrementSent();
-            clientSocket.read(readBuffer);
-            String hash_response = new String(readBuffer.array()).trim();
-            boolean hashInTable = checkAndDeleteHash(hash_response);
-            // probably need to handle if hashInTable is false
-            if (hashInTable){
-                inrcementReceived();
-                readBuffer.clear();
-            }
-        } catch (IOException e) {
+        }catch (IOException e) {
             e.printStackTrace();
             clientSocket.close();
+            System.out.println("Client Socket Closed due to SendMessage error");
+        }
+    }
+
+    private void checkMessages() {
+        while(true){
+            // want to access the stored list and check if the hash is there
+            // I think that it should always be 8196.
+            // Could potentially be changed to ByteBuffer.allocate(8196);
+            String hashed_message = (String) hashed_list.toArray()[0];
+            ByteBuffer readBuffer = ByteBuffer.allocate(hashed_message.getBytes().length);
+            try{
+                clientSocket.read(readBuffer);
+                String hash_response = new String(readBuffer.array()).trim(); // not sure if trim is needed
+                boolean hashInTable = checkAndDeleteHash(hash_response);
+                // probably need to handle if hashInTable is false
+                if (hashInTable){
+                    inrcementReceived();
+                    readBuffer.clear();
+                }
+                else{
+                    // error checking message
+                    System.out.println("Receiving a hash from server that is not in the LinkedList");
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -97,15 +146,18 @@ public class Client {
         return byteMessage;
     }
 
-    private String hashRandomByteMessages(byte[] message) {
+    private void hashRandomByteMessages(byte[] message) {
         String hashed_message = hashingDevice.SHA1FromBytes(message);
-        hashed_list.add(hashed_message);
-        return hashed_message;
-    }
+        synchronized (hashed_list) {
+            hashed_list.add(hashed_message);
+        }
+   }
 
     private boolean checkAndDeleteHash(String message){
         if (hashed_list.contains(message)){
-            hashed_list.remove(message);
+            synchronized (hashed_list) {
+                hashed_list.remove(message);
+            }
             return true;
         }
         else{
@@ -142,11 +194,7 @@ public class Client {
         }
         Client client = new Client(hostname, port, rate);
         client.runClient();
-        /*
-        for (int i=0; i<100; i++) {
-            Client client = new Client();
-            client.sendMessageAndCheckResponse();
-        }*/
+
     }
 }
 
