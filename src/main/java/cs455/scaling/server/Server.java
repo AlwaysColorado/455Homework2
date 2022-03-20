@@ -61,16 +61,15 @@ public class Server {
                 selector.select();
                 Set<SelectionKey> keys = selector.selectedKeys();
                 for(SelectionKey key : keys) {
+                    if (key.isValid() == false){
+                        continue;
+                    }
                     if (key.isAcceptable()) {
                         System.out.println("New connection attempt, making a new task.");
-
-                        this.threadPoolManager.addTask(new REGISTER_CLIENT(selector, serverSocket,
-                                this));
-                    } else if (key.isReadable()) {
+                        this.threadPoolManager.addTask(new REGISTER_CLIENT(selector, serverSocket, key, this));
+                    } if (key.isReadable()) {
                         System.out.println("New message, making a new task.");
                         this.threadPoolManager.addTask(new HANDLE_TRAFFIC(key, this));
-                    } else {
-                        System.out.println("Key is not readable or acceptable");
                     }
                 }
             }

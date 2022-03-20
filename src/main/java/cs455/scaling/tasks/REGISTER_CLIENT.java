@@ -12,12 +12,14 @@ public class REGISTER_CLIENT extends Task{
     public Selector selector;
     public ServerSocketChannel serverSocket;
     private final Server parent;
+    private final SelectionKey key;
 
-    public REGISTER_CLIENT(Selector selector, ServerSocketChannel serverSocket, Server parent) {
+    public REGISTER_CLIENT(Selector selector, ServerSocketChannel serverSocket, SelectionKey key, Server parent) {
         super(TaskType.REGISTER_CLIENT);
         this.selector = selector;
         this.serverSocket = serverSocket;
         this.parent = parent;
+        this.key = key;
         System.out.println("register created.");
     }
 
