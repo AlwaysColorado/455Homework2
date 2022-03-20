@@ -2,6 +2,8 @@ package cs455.scaling.server;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.net.SocketAddress;
 import java.nio.channels.*;
 import java.util.*;
@@ -61,7 +63,8 @@ public class Server {
                 for(SelectionKey key : keys) {
                     if (key.isAcceptable()) {
                         System.out.println("New connection attempt, making a new task.");
-                        this.threadPoolManager.addTask(new REGISTER_CLIENT(selector, (SocketChannel) key.channel(),
+                        SocketChannel clientSocket = serverSocket.accept();
+                        this.threadPoolManager.addTask(new REGISTER_CLIENT(selector, clientSocket,
                                 this));
                     } else if (key.isReadable()) {
                         this.threadPoolManager.addTask(new HANDLE_TRAFFIC(key, this));
