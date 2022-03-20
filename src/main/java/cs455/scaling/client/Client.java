@@ -32,20 +32,18 @@ public class Client {
     }
 
     public void runClient()  {
-        boolean notConnected = true;
-        while(notConnected) {
-            try {
-                // connect to the server
-                clientSocket = SocketChannel.open();
-                clientSocket.connect(new InetSocketAddress(serverHostName, serverPort));
-                notConnected = false;
-                //TODO: send messages(sendMessageAndCheckResponse()) at rate this.rate
-            } catch (ConnectException e) {
-                System.out.println("Waiting for connection");
-            } catch (IOException e) {
-                System.out.println("ClientSocket will not open");
-            }
+        try {
+            // connect to the server
+            clientSocket = SocketChannel.open();
+            clientSocket.configureBlocking(true);
+            clientSocket.connect(new InetSocketAddress(serverHostName, serverPort));
+            clientSocket.finishConnect();
+        } catch (ConnectException e) {
+            System.out.println("Waiting for connection");
+        } catch (IOException e) {
+            System.out.println("ClientSocket will not open");
         }
+
 
         totalSent = 0;
         totalReceived = 0;
