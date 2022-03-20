@@ -67,6 +67,7 @@ public class Server {
                         this.threadPoolManager.addTask(new REGISTER_CLIENT(selector, clientSocket,
                                 this));
                     } else if (key.isReadable()) {
+                        System.out.println("New message, making a new task.");
                         this.threadPoolManager.addTask(new HANDLE_TRAFFIC(key, this));
                     } else {
                         System.out.println("Key is not readable or acceptable");

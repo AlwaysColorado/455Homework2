@@ -38,7 +38,7 @@ public class Client {
                 // connect to the server
                 clientSocket = SocketChannel.open();
                 clientSocket.connect(new InetSocketAddress(serverHostName, serverPort));
-                notConnected = true;
+                notConnected = false;
                 //TODO: send messages(sendMessageAndCheckResponse()) at rate this.rate
             } catch (ConnectException e) {
                 System.out.println("Waiting for connection");
