@@ -18,7 +18,6 @@ public class Client {
     private final int serverPort, messageRate;
     private static SocketChannel clientSocket;
     private final Hashing hashingDevice = new Hashing();
-    private final ByteBuffer writeBuffer = ByteBuffer.allocate(8196);
     private static ByteBuffer buffer;
     private long totalSent;
     private long totalReceived;
@@ -96,9 +95,8 @@ public class Client {
 
     public void sendMessages() throws IOException {
         System.out.println("Sending a traffic message to server");
-        byte[] message = generateRandomByteMessage();
-        hashRandomByteMessages(message); // add it to the list (hashed)
-        writeBuffer.put(message); // add it to buffer
+        ByteBuffer writeBuffer = ByteBuffer.wrap(generateRandomByteMessage());
+        hashRandomByteMessages(writeBuffer.array()); // add it to the list (hashed)
         try {
             clientSocket.write(writeBuffer);
             writeBuffer.clear();
