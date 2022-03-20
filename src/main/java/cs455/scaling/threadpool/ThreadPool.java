@@ -86,15 +86,15 @@ public class ThreadPool extends Thread {
         private LinkedBlockingQueue<Task> taskList;
 
         public Worker() {
-            taskList = new LinkedBlockingQueue<>();
+            this.taskList = new LinkedBlockingQueue<>();
         }
         private void killIndividualThread(){
             running.set(false);
         }
 
         public void addTaskList(LinkedBlockingQueue<Task> tl){
-            synchronized (taskList) {
-                this.taskList = tl;
+            synchronized (this.taskList) {
+                this.taskList.addAll(tl);
                 this.taskList.notify();
             }
         }
@@ -103,18 +103,18 @@ public class ThreadPool extends Thread {
             running.set(true);
             while(running.get()){
                 isAvailable.set(false);
-                synchronized (taskList) {
+                synchronized (this.taskList) {
                     while (taskList.size() == 0) {
                         try {
                             isAvailable.set(true);
-                            taskList.wait();
+                            this.taskList.wait();
 
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
                     }
                 }
-                Task task = taskList.poll();
+                Task task = this.taskList.poll();
                 assert task != null;
                 System.out.println("Worker Thread: Thread starting");
                 task.executeTask(); // run the task
