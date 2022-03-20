@@ -63,7 +63,8 @@ public class Server {
                 while (iter.hasNext()) {
                     SelectionKey key = iter.next();
                     if (key.isAcceptable()) {
-                        this.threadPoolManager.addTask(new REGISTER_CLIENT(selector, (SocketChannel) key.channel(), this));
+                        this.threadPoolManager.addTask(new REGISTER_CLIENT(selector, (SocketChannel) key.channel(),
+                                this));
                     } else if (key.isReadable()) {
                         this.threadPoolManager.addTask(new HANDLE_TRAFFIC(key, this));
                     } else {
@@ -160,9 +161,12 @@ public class Server {
         }
     }
 
-    public synchronized Hashtable<SocketAddress, Integer> getClientStatistics(){
-        Hashtable<SocketAddress, Integer> cStats = (Hashtable<SocketAddress, Integer>) clientStatistics.clone(); // Shallow copy
-        clientStatistics.replaceAll((key, value) -> 0);  // This *SHOULD* replace all values with zero??
+    public Hashtable<SocketAddress, Integer> getClientStatistics(){
+        Hashtable<SocketAddress, Integer> cStats;
+        synchronized (clientStatistics) {
+            cStats = new Hashtable<>(clientStatistics); // deep copy
+            clientStatistics.replaceAll((key, value) -> 0);  // This *SHOULD* replace all values with zero??
+        }
         return cStats;
     }
 
