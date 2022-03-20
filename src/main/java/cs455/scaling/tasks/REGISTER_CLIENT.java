@@ -10,14 +10,14 @@ import java.nio.channels.*;
 public class REGISTER_CLIENT extends Task{
     //References to the server's selector and the client's socket.
     public Selector selector;
-    public ServerSocketChannel serverSocket;
+    public SocketChannel clientSocket;
     private final Server parent;
     private final SelectionKey key;
 
-    public REGISTER_CLIENT(Selector selector, ServerSocketChannel serverSocket, SelectionKey key, Server parent) {
+    public REGISTER_CLIENT(Selector selector, SocketChannel clientSocket, SelectionKey key, Server parent) {
         super(TaskType.REGISTER_CLIENT);
         this.selector = selector;
-        this.serverSocket = serverSocket;
+        this.clientSocket = clientSocket;
         this.parent = parent;
         this.key = key;
         System.out.println("register created.");
@@ -27,7 +27,6 @@ public class REGISTER_CLIENT extends Task{
     public void executeTask(){
         System.out.println("register executed.");
         try {
-            SocketChannel clientSocket = serverSocket.accept();
             clientSocket.configureBlocking(false);
             clientSocket.register(selector, SelectionKey.OP_READ);
             System.out.println("registered client to selector.");
