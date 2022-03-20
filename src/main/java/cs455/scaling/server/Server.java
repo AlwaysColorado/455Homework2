@@ -6,6 +6,8 @@ import java.net.SocketAddress;
 import java.nio.channels.*;
 import java.util.*;
 
+import cs455.scaling.tasks.HANDLE_TRAFFIC;
+import cs455.scaling.tasks.REGISTER_CLIENT;
 import cs455.scaling.threadpool.ThreadPoolManager;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -61,9 +63,10 @@ public class Server {
                 while (iter.hasNext()) {
                     SelectionKey key = iter.next();
                     if (key.isAcceptable()) {
-                        //create a REGISTER_CLIENT task and give it to TPM.
+                        this.threadPoolManager.addTask(new REGISTER_CLIENT(selector, (SocketChannel) key.channel(),
+                                this));
                     } else if (key.isReadable()) {
-                        //create a HANDLE_TRAFFIC task and give it to TPM.
+                        this.threadPoolManager.addTask(new HANDLE_TRAFFIC(key, this));
                     } else {
                         System.out.println("Key is not readable or acceptable");
                     }
@@ -158,9 +161,12 @@ public class Server {
         }
     }
 
-    public synchronized Hashtable<SocketAddress, Integer> getClientStatistics(){
-        Hashtable<SocketAddress, Integer> cStats = (Hashtable<SocketAddress, Integer>) clientStatistics.clone(); // Shallow copy
-        clientStatistics.replaceAll((key, value) -> 0);  // This *SHOULD* replace all values with zero??
+    public Hashtable<SocketAddress, Integer> getClientStatistics(){
+        Hashtable<SocketAddress, Integer> cStats;
+        synchronized (clientStatistics) {
+            cStats = new Hashtable<>(clientStatistics); // deep copy
+            clientStatistics.replaceAll((key, value) -> 0);  // This *SHOULD* replace all values with zero??
+        }
         return cStats;
     }
 
