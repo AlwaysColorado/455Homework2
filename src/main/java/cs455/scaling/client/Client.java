@@ -53,7 +53,7 @@ public class Client {
 
         // SEND MESSAGE TIMER: Send messages at messageRate
         timerForMessage = new Timer();
-        timerForMessage.scheduleAtFixedRate(new ClientMessageTimer(this), 0, messageRate);
+        timerForMessage.scheduleAtFixedRate(new ClientMessageTimer(this), 0, 1000/messageRate);
 
         // CHECK FOR MESSAGES
         checkMessages();
