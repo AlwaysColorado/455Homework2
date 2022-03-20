@@ -1,6 +1,7 @@
 package cs455.scaling.client;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
@@ -31,12 +32,19 @@ public class Client {
     }
 
     public void runClient()  {
-        try {
-            // connect to the server
-            clientSocket = SocketChannel.open(new InetSocketAddress(serverHostName, serverPort));
-            //TODO: send messages(sendMessageAndCheckResponse()) at rate this.rate
-        } catch(IOException e){
-            System.out.println("ClientSocket will not open");
+        boolean notConnected = true;
+        while(notConnected) {
+            try {
+                // connect to the server
+                clientSocket = SocketChannel.open();
+                clientSocket.connect(new InetSocketAddress(serverHostName, serverPort));
+                notConnected = true;
+                //TODO: send messages(sendMessageAndCheckResponse()) at rate this.rate
+            } catch (ConnectException e) {
+                System.out.println("Waiting for connection");
+            } catch (IOException e) {
+                System.out.println("ClientSocket will not open");
+            }
         }
 
         totalSent = 0;

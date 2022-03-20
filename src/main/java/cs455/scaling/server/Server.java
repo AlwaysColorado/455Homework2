@@ -56,13 +56,11 @@ public class Server {
     private void waitForConnections() {
         try {
             while (stillWaiting.get()) {
-                System.out.println("Waiting for connections");
-                selector.select();
                 if (selector.selectNow() == 0) continue;
-                Iterator<SelectionKey> iter = selector.selectedKeys().iterator();
-                while (iter.hasNext()) {
-                    SelectionKey key = iter.next();
+                Set<SelectionKey> keys = selector.selectedKeys();
+                for(SelectionKey key : keys) {
                     if (key.isAcceptable()) {
+                        System.out.println("New connection attempt, making a new task.");
                         this.threadPoolManager.addTask(new REGISTER_CLIENT(selector, (SocketChannel) key.channel(),
                                 this));
                     } else if (key.isReadable()) {
@@ -71,7 +69,6 @@ public class Server {
                         System.out.println("Key is not readable or acceptable");
                     }
                 }
-                iter.remove();
             }
         } catch (IOException e) {
             //Not sure if an IOException in this loop leaves the program in a bad state.
