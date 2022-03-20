@@ -148,7 +148,9 @@ public class Client {
 
     private void hashRandomByteMessages(byte[] message) {
         String hashed_message = hashingDevice.SHA1FromBytes(message);
-        hashed_list.add(hashed_message);
+        synchronized (hashed_list) {
+            hashed_list.add(hashed_message);
+        }
    }
 
     private boolean checkAndDeleteHash(String message){
