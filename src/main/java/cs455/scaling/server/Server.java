@@ -58,13 +58,13 @@ public class Server {
     private void waitForConnections() {
         try {
             while (stillWaiting.get()) {
-                if (selector.selectNow() == 0) continue;
+                selector.select();
                 Set<SelectionKey> keys = selector.selectedKeys();
                 for(SelectionKey key : keys) {
                     if (key.isAcceptable()) {
                         System.out.println("New connection attempt, making a new task.");
-                        SocketChannel clientSocket = serverSocket.accept();
-                        this.threadPoolManager.addTask(new REGISTER_CLIENT(selector, clientSocket,
+
+                        this.threadPoolManager.addTask(new REGISTER_CLIENT(selector, serverSocket,
                                 this));
                     } else if (key.isReadable()) {
                         System.out.println("New message, making a new task.");

@@ -19,10 +19,12 @@ public class HANDLE_TRAFFIC extends Task{
         super(TaskType.HANDLE_TRAFFIC);
         this.key = key;
         this.parent = parent;
+        System.out.println("Handle traffic created.");
     }
 
     @Override
     public void executeTask(){
+        System.out.println("Handle traffic executed.");
         //First, we need a buffer to read data. The client will be sending a packet that's 8196 bytes.
         // will one key read multiple such messages?
         ByteBuffer readBuffer = ByteBuffer.allocate(8196);
