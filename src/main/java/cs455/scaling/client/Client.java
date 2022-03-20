@@ -155,7 +155,9 @@ public class Client {
 
     private boolean checkAndDeleteHash(String message){
         if (hashed_list.contains(message)){
-            hashed_list.remove(message);
+            synchronized (hashed_list) {
+                hashed_list.remove(message);
+            }
             return true;
         }
         else{
