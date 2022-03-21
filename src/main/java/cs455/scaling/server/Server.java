@@ -56,7 +56,8 @@ public class Server {
     private void waitForConnections() {
         try {
             while (stillWaiting.get()) {
-                selector.select();
+                if (selector.selectNow() == 0)
+                    continue;
                 Set<SelectionKey> keys = selector.selectedKeys();
                 Iterator<SelectionKey> iterator = keys.iterator();
                 while(iterator.hasNext()) {
@@ -66,11 +67,8 @@ public class Server {
                     }
                     if (key.isAcceptable()) {
                         SocketChannel clientSocket = serverSocket.accept();
-                        //System.out.println("New connection attempt, making a new task.");
-                        //System.out.println(clientSocket);
                         this.threadPoolManager.addTask(new REGISTER_CLIENT(this.selector, clientSocket, key, this));
                     } if (key.isReadable()) {
-                        //System.out.println("New message, making a new task.");
                         this.threadPoolManager.addTask(new HANDLE_TRAFFIC(key, this));
                     }
                     iterator.remove();
@@ -153,8 +151,6 @@ public class Server {
         synchronized (clientStatistics) {
             clientStatistics.put(clientAddress, 0);
         }
-        //System.out.println("Registered a client in server.");
-        //System.out.println(selector.keys());
     }
 
     public void deregisterClient(SocketAddress clientAddress) {

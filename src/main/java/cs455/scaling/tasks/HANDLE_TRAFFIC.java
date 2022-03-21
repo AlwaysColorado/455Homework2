@@ -19,12 +19,10 @@ public class HANDLE_TRAFFIC extends Task{
         super(TaskType.HANDLE_TRAFFIC);
         this.key = key;
         this.parent = parent;
-        //System.out.println("Handle traffic created.");
     }
 
     @Override
     public void executeTask(){
-        //System.out.println("Handle traffic executed.");
         //First, we need a buffer to read data. The client will be sending a packet that's 8196 bytes.
         // will one key read multiple such messages?
         ByteBuffer readBuffer = ByteBuffer.allocate(8196);
@@ -44,21 +42,20 @@ public class HANDLE_TRAFFIC extends Task{
             while(readBuffer.hasRemaining() && bytesRead != -1) {
                 bytesRead = clientSocket.read(readBuffer);
                 //nothing read, stop.
-                if(bytesRead == 0)
-                    break;
-                //Take the byte[] from the packet, get the hash.
-                // The packet itself is completely worthless, so we don't need to save it.
-                String hash = hasher.SHA1FromBytes(readBuffer.array());
-                //get the hash's bytes, and length in bytes.
-                byte[] hashBytes = hash.getBytes();
-                //send it back to the client.
-                ByteBuffer writeBuffer = ByteBuffer.wrap(hashBytes);
-                //System.out.println("Writing response to client");
-                clientSocket.write(writeBuffer);
-                readBuffer.clear();
-                writeBuffer.clear();
-                totalMessagesRead++;
             }
+            //Take the byte[] from the packet, get the hash.
+            // The packet itself is completely worthless, so we don't need to save it.
+            String hash = hasher.SHA1FromBytes(readBuffer.array());
+            //get the hash's bytes, and length in bytes.
+            byte[] hashBytes = hash.getBytes();
+            //send it back to the client.
+            ByteBuffer writeBuffer = ByteBuffer.wrap(hashBytes);
+            int bytesWritten = 0;
+            while(writeBuffer.hasRemaining() && bytesWritten != -1)
+                bytesWritten = clientSocket.write(writeBuffer);
+            readBuffer.clear();
+            writeBuffer.clear();
+            totalMessagesRead++;
             //after we've read everything off the stream, let the server know how many messages we got.
             parent.incrementClientMsgCount(clientAddress, totalMessagesRead);
             parent.selector.wakeup(); //poke the selector again? idk.

@@ -20,16 +20,13 @@ public class REGISTER_CLIENT extends Task{
         this.clientSocket = clientSocket;
         this.parent = parent;
         //this.key = key;
-        System.out.println("register created.");
     }
 
     @Override
     public void executeTask(){
-        System.out.println("register executed.");
         try {
             clientSocket.configureBlocking(false);
             clientSocket.register(parent.selector, SelectionKey.OP_READ);
-            System.out.println("registered client to selector.");
             parent.registerOneClient(clientSocket.getRemoteAddress());
             parent.selector.wakeup();
         } catch (ClosedChannelException e) {

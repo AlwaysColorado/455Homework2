@@ -96,12 +96,14 @@ public class Client {
         System.out.println("Sending a traffic message to server");
         ByteBuffer writeBuffer = ByteBuffer.wrap(generateRandomByteMessage());
         hashRandomByteMessages(writeBuffer.array()); // add it to the list (hashed)
+        int bytesWritten = 0;
         try {
-            int bytesWritten = clientSocket.write(writeBuffer);
+            while(writeBuffer.hasRemaining())
+                bytesWritten += clientSocket.write(writeBuffer);
             if(bytesWritten == 0){
                 System.out.println("Write failed, nothing got written.");
             }
-            writeBuffer.compact();
+            writeBuffer.clear();
             incrementSent();
         }catch (IOException e) {
             e.printStackTrace();
@@ -111,31 +113,27 @@ public class Client {
     }
 
     private void checkMessages() {
+        hashRandomByteMessages(generateRandomByteMessage());
         ByteBuffer readBuffer = ByteBuffer.allocate(40);
         while(true){
+            int bytesRead = 0;
             // want to access the stored list and check if the hash is there
             // I think that it should always be 8196.
             // Could potentially be changed to ByteBuffer.allocate(8196);
             try{
-                int bytesRead = clientSocket.read(readBuffer);
-                if (bytesRead == 0){
-                    continue;
-                }
-                if (bytesRead == -1){
-                    throw new IOException();
-                }
+                while(readBuffer.hasRemaining() && bytesRead != -1)
+                    bytesRead = clientSocket.read(readBuffer);
                 String hash_response = new String(readBuffer.array()).trim(); // not sure if trim is needed
-                System.out.println("Got a message from the server");
                 boolean hashInTable = checkAndDeleteHash(hash_response);
                 // probably need to handle if hashInTable is false
                 if (hashInTable){
                     inrcementReceived();
-                    readBuffer.clear();
                 }
                 else{
                     // error checking message
                     System.out.println("Receiving a hash from server that is not in the LinkedList");
                 }
+                readBuffer.clear();
             } catch (IOException e) {
                 e.printStackTrace();
             }

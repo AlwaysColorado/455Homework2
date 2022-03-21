@@ -20,7 +20,6 @@ public class Worker extends Thread{
     public void addTaskList(LinkedBlockingQueue<Task> tl){
         this.taskList.addAll(tl);
         synchronized (this.taskList) {
-            //System.out.println("Worker: Tasklist added");
             this.taskList.notify();
         }
     }
@@ -31,11 +30,9 @@ public class Worker extends Thread{
             synchronized (this.taskList) {
                 while (taskList.size() == 0) {
                     try {
-                        //System.out.println("Worker waiting");
                         isAvailable.set(true);
                         this.taskList.wait();
                         isAvailable.set(false);
-                        //System.out.println("Worker executing");
 
                     } catch (InterruptedException e) {
                         e.printStackTrace();
@@ -44,9 +41,7 @@ public class Worker extends Thread{
             }
             Task task = this.taskList.poll();
             assert task != null;
-            //System.out.println("Worker Thread: Thread starting");
             task.executeTask(); // run the task
-            //System.out.println("Worker Thread: Worker has finished a task"); // message for testing can be removed later
         }
 
     }

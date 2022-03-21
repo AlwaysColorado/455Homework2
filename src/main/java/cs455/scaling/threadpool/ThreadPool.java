@@ -55,7 +55,6 @@ public class ThreadPool extends Thread {
         while(!foundWorker){
 
            if(workers[counter].isAvailable.get()){
-               //System.out.println("Adding task to worker");
                workers[counter].addTaskList(taskList);
                foundWorker = true;
            }
