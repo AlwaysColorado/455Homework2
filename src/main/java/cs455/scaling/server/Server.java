@@ -15,7 +15,7 @@ public class Server {
 
     private ServerSocketChannel serverSocket;
     private AtomicBoolean stillWaiting = new AtomicBoolean(true);
-    private Selector selector;
+    public Selector selector;
     private final int portNum;
     private final Hashtable<SocketAddress, Integer> clientStatistics;
     Timer timer;
@@ -67,13 +67,15 @@ public class Server {
                     if (key.isAcceptable()) {
                         SocketChannel clientSocket = serverSocket.accept();
                         System.out.println("New connection attempt, making a new task.");
-                        this.threadPoolManager.addTask(new REGISTER_CLIENT(selector, clientSocket, key, this));
+                        System.out.println(clientSocket);
+                        this.threadPoolManager.addTask(new REGISTER_CLIENT(this.selector, clientSocket, key, this));
                     } if (key.isReadable()) {
                         System.out.println("New message, making a new task.");
                         this.threadPoolManager.addTask(new HANDLE_TRAFFIC(key, this));
                     }
                     iterator.remove();
                 }
+                keys.clear();
             }
         } catch (IOException e) {
             //Not sure if an IOException in this loop leaves the program in a bad state.
@@ -151,6 +153,8 @@ public class Server {
         synchronized (clientStatistics) {
             clientStatistics.put(clientAddress, 0);
         }
+        System.out.println("Registered a client in server.");
+        System.out.println(selector.keys());
     }
 
     public void deregisterClient(SocketAddress clientAddress) {

@@ -34,15 +34,14 @@ public class Client {
         try {
             // connect to the server
             clientSocket = SocketChannel.open();
-            clientSocket.configureBlocking(true);
             clientSocket.connect(new InetSocketAddress(serverHostName, serverPort));
-            clientSocket.finishConnect();
+            //clientSocket.finishConnect();
         } catch (ConnectException e) {
             System.out.println("Waiting for connection");
         } catch (IOException e) {
             System.out.println("ClientSocket will not open");
         }
-
+        System.out.println(clientSocket);
 
         totalSent = 0;
         totalReceived = 0;
@@ -98,8 +97,11 @@ public class Client {
         ByteBuffer writeBuffer = ByteBuffer.wrap(generateRandomByteMessage());
         hashRandomByteMessages(writeBuffer.array()); // add it to the list (hashed)
         try {
-            clientSocket.write(writeBuffer);
-            writeBuffer.clear();
+            int bytesWritten = clientSocket.write(writeBuffer);
+            if(bytesWritten == 0){
+                System.out.println("Write failed, nothing got written.");
+            }
+            writeBuffer.compact();
             incrementSent();
         }catch (IOException e) {
             e.printStackTrace();
