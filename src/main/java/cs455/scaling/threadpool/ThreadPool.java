@@ -42,6 +42,7 @@ public class ThreadPool extends Thread {
                 // polls a batch
                 // taskList size is 1
                 taskList = batchList.poll();
+                //System.out.println("got a new tasklist. size:" + taskList.size());
                 workerHelper(taskList);
 
             }
@@ -55,6 +56,7 @@ public class ThreadPool extends Thread {
         while(!foundWorker){
 
            if(workers[counter].isAvailable.get()){
+               //System.out.println("Adding task to worker");
                workers[counter].addTaskList(taskList);
                foundWorker = true;
            }
@@ -80,48 +82,5 @@ public class ThreadPool extends Thread {
     }
 
 
-    private class Worker extends Thread{
-        private AtomicBoolean isAvailable = new AtomicBoolean(false);
-        private AtomicBoolean running = new AtomicBoolean(false);
-        private LinkedBlockingQueue<Task> taskList;
 
-        public Worker() {
-            this.taskList = new LinkedBlockingQueue<>();
-        }
-        private void killIndividualThread(){
-            running.set(false);
-        }
-
-        public void addTaskList(LinkedBlockingQueue<Task> tl){
-            synchronized (this.taskList) {
-                this.taskList.addAll(tl);
-                this.taskList.notify();
-            }
-        }
-
-        public void run(){
-            running.set(true);
-            while(running.get()){
-                isAvailable.set(false);
-                synchronized (this.taskList) {
-                    while (taskList.size() == 0) {
-                        try {
-                            isAvailable.set(true);
-                            this.taskList.wait();
-
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-                Task task = this.taskList.poll();
-                assert task != null;
-                System.out.println("Worker Thread: Thread starting");
-                task.executeTask(); // run the task
-                System.out.println("Worker Thread: Worker has finished a task"); // message for testing can be removed later
-            }
-
-        }
-
-    }
 }

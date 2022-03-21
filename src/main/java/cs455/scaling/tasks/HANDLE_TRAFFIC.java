@@ -19,17 +19,18 @@ public class HANDLE_TRAFFIC extends Task{
         super(TaskType.HANDLE_TRAFFIC);
         this.key = key;
         this.parent = parent;
-        System.out.println("Handle traffic created.");
+        //System.out.println("Handle traffic created.");
     }
 
     @Override
     public void executeTask(){
-        System.out.println("Handle traffic executed.");
+        //System.out.println("Handle traffic executed.");
         //First, we need a buffer to read data. The client will be sending a packet that's 8196 bytes.
         // will one key read multiple such messages?
         ByteBuffer readBuffer = ByteBuffer.allocate(8196);
         //Get the client's SocketChannel
         SocketChannel clientSocket = (SocketChannel) key.channel();
+
         //we have to null-check here, unfortunately. reading the address causes an IOException if the connection
         // has problems, but the Server still needs the address if it fails to read...
         SocketAddress clientAddress = null;
@@ -42,15 +43,16 @@ public class HANDLE_TRAFFIC extends Task{
             //read 8kb packets from the channel until end of stream (-1 gets returned)
             while(readBuffer.hasRemaining() && bytesRead != -1) {
                 bytesRead = clientSocket.read(readBuffer);
+                //nothing read, stop.
+                if(bytesRead == 0)
+                    break;
                 //Take the byte[] from the packet, get the hash.
                 // The packet itself is completely worthless, so we don't need to save it.
                 String hash = hasher.SHA1FromBytes(readBuffer.array());
                 //get the hash's bytes, and length in bytes.
                 byte[] hashBytes = hash.getBytes();
-                int messageLength = hashBytes.length;
                 //send it back to the client.
-                ByteBuffer writeBuffer = ByteBuffer.allocate(messageLength);
-                writeBuffer.put(hashBytes);
+                ByteBuffer writeBuffer = ByteBuffer.wrap(hashBytes);
                 clientSocket.write(writeBuffer);
                 readBuffer.clear();
                 writeBuffer.clear();

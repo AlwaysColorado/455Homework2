@@ -111,12 +111,11 @@ public class Client {
     }
 
     private void checkMessages() {
+        ByteBuffer readBuffer = ByteBuffer.allocate(40);
         while(true){
             // want to access the stored list and check if the hash is there
             // I think that it should always be 8196.
             // Could potentially be changed to ByteBuffer.allocate(8196);
-            String hashed_message = hashingDevice.SHA1FromBytes(generateRandomByteMessage());
-            ByteBuffer readBuffer = ByteBuffer.allocate(hashed_message.getBytes().length);
             try{
                 clientSocket.read(readBuffer);
                 String hash_response = new String(readBuffer.array()).trim(); // not sure if trim is needed
