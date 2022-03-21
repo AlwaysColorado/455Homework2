@@ -25,7 +25,7 @@ public class ServerStatistics extends TimerTask {
 
         // TODO: Format floating point numbers to limit length
         System.out.printf("[%s] Server Throughput: %f messages/s, Active Client Connections: %d, " +
-                        "Mean Per-Client Throughput: %f messages/s, Std. Dev. Of Per-Client Throughput: %f messages/s",
+                        "Mean Per-Client Throughput: %f messages/s, Std. Dev. Of Per-Client Throughput: %f messages/s\n",
                 date, throughput, activeClientConnections, meanPerClientThroughput, sdPerClientThroughput);
     }
 

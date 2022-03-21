@@ -32,7 +32,7 @@ public class Server {
         try {
             selector = Selector.open(); // created once
             serverSocket = ServerSocketChannel.open(); // open channel
-            serverSocket.socket().bind(new InetSocketAddress("localhost", portNum)); // bind to relevant information
+            serverSocket.socket().bind(new InetSocketAddress(portNum)); // bind to relevant information
             System.out.println("Server started on port " + portNum);
             serverSocket.configureBlocking(false); // blocking is false
             serverSocket.register(selector, SelectionKey.OP_ACCEPT); // register selector

@@ -30,7 +30,7 @@ public class REGISTER_CLIENT extends Task{
             clientSocket.configureBlocking(false);
             clientSocket.register(parent.selector, SelectionKey.OP_READ);
             System.out.println("registered client to selector.");
-            parent.registerOneClient(clientSocket.getLocalAddress());
+            parent.registerOneClient(clientSocket.getRemoteAddress());
             parent.selector.wakeup();
         } catch (ClosedChannelException e) {
             //if the client socket is closed, the server should move on. Do nothing.

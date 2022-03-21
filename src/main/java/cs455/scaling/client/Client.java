@@ -117,8 +117,15 @@ public class Client {
             // I think that it should always be 8196.
             // Could potentially be changed to ByteBuffer.allocate(8196);
             try{
-                clientSocket.read(readBuffer);
+                int bytesRead = clientSocket.read(readBuffer);
+                if (bytesRead == 0){
+                    continue;
+                }
+                if (bytesRead == -1){
+                    throw new IOException();
+                }
                 String hash_response = new String(readBuffer.array()).trim(); // not sure if trim is needed
+                System.out.println("Got a message from the server");
                 boolean hashInTable = checkAndDeleteHash(hash_response);
                 // probably need to handle if hashInTable is false
                 if (hashInTable){

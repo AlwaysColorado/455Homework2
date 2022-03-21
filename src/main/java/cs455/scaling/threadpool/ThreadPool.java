@@ -42,7 +42,6 @@ public class ThreadPool extends Thread {
                 // polls a batch
                 // taskList size is 1
                 taskList = batchList.poll();
-                //System.out.println("got a new tasklist. size:" + taskList.size());
                 workerHelper(taskList);
 
             }
