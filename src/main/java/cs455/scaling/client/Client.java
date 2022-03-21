@@ -93,7 +93,6 @@ public class Client {
 //    }
 
     public void sendMessages() throws IOException {
-        System.out.println("Sending a traffic message to server");
         ByteBuffer writeBuffer = ByteBuffer.wrap(generateRandomByteMessage());
         hashRandomByteMessages(writeBuffer.array()); // add it to the list (hashed)
         int bytesWritten = 0;
