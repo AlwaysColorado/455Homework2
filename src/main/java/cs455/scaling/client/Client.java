@@ -1,6 +1,7 @@
 package cs455.scaling.client;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
@@ -17,7 +18,6 @@ public class Client {
     private final int serverPort, messageRate;
     private static SocketChannel clientSocket;
     private final Hashing hashingDevice = new Hashing();
-    private final ByteBuffer writeBuffer = ByteBuffer.allocate(8196);
     private static ByteBuffer buffer;
     private long totalSent;
     private long totalReceived;
@@ -33,11 +33,15 @@ public class Client {
     public void runClient()  {
         try {
             // connect to the server
-            clientSocket = SocketChannel.open(new InetSocketAddress(serverHostName, serverPort));
-            //TODO: send messages(sendMessageAndCheckResponse()) at rate this.rate
-        } catch(IOException e){
+            clientSocket = SocketChannel.open();
+            clientSocket.connect(new InetSocketAddress(serverHostName, serverPort));
+            //clientSocket.finishConnect();
+        } catch (ConnectException e) {
+            System.out.println("Waiting for connection");
+        } catch (IOException e) {
             System.out.println("ClientSocket will not open");
         }
+        System.out.println(clientSocket);
 
         totalSent = 0;
         totalReceived = 0;
@@ -89,11 +93,15 @@ public class Client {
 //    }
 
     public void sendMessages() throws IOException {
-        byte[] message = generateRandomByteMessage();
-        hashRandomByteMessages(message); // add it to the list (hashed)
-        writeBuffer.put(message); // add it to buffer
+        ByteBuffer writeBuffer = ByteBuffer.wrap(generateRandomByteMessage());
+        hashRandomByteMessages(writeBuffer.array()); // add it to the list (hashed)
+        int bytesWritten = 0;
         try {
-            clientSocket.write(writeBuffer);
+            while(writeBuffer.hasRemaining())
+                bytesWritten += clientSocket.write(writeBuffer);
+            if(bytesWritten == 0){
+                System.out.println("Write failed, nothing got written.");
+            }
             writeBuffer.clear();
             incrementSent();
         }catch (IOException e) {
@@ -104,25 +112,27 @@ public class Client {
     }
 
     private void checkMessages() {
+        hashRandomByteMessages(generateRandomByteMessage());
+        ByteBuffer readBuffer = ByteBuffer.allocate(40);
         while(true){
+            int bytesRead = 0;
             // want to access the stored list and check if the hash is there
             // I think that it should always be 8196.
             // Could potentially be changed to ByteBuffer.allocate(8196);
-            String hashed_message = (String) hashed_list.toArray()[0];
-            ByteBuffer readBuffer = ByteBuffer.allocate(hashed_message.getBytes().length);
             try{
-                clientSocket.read(readBuffer);
+                while(readBuffer.hasRemaining() && bytesRead != -1)
+                    bytesRead = clientSocket.read(readBuffer);
                 String hash_response = new String(readBuffer.array()).trim(); // not sure if trim is needed
                 boolean hashInTable = checkAndDeleteHash(hash_response);
                 // probably need to handle if hashInTable is false
                 if (hashInTable){
                     inrcementReceived();
-                    readBuffer.clear();
                 }
                 else{
                     // error checking message
                     System.out.println("Receiving a hash from server that is not in the LinkedList");
                 }
+                readBuffer.clear();
             } catch (IOException e) {
                 e.printStackTrace();
             }

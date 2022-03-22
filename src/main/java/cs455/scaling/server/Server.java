@@ -15,7 +15,7 @@ public class Server {
 
     private ServerSocketChannel serverSocket;
     private AtomicBoolean stillWaiting = new AtomicBoolean(true);
-    private Selector selector;
+    public Selector selector;
     private final int portNum;
     private final Hashtable<SocketAddress, Integer> clientStatistics;
     Timer timer;
@@ -32,7 +32,7 @@ public class Server {
         try {
             selector = Selector.open(); // created once
             serverSocket = ServerSocketChannel.open(); // open channel
-            serverSocket.socket().bind(new InetSocketAddress("localhost", portNum)); // bind to relevant information
+            serverSocket.socket().bind(new InetSocketAddress(portNum)); // bind to relevant information
             System.out.println("Server started on port " + portNum);
             serverSocket.configureBlocking(false); // blocking is false
             serverSocket.register(selector, SelectionKey.OP_ACCEPT); // register selector
@@ -56,22 +56,24 @@ public class Server {
     private void waitForConnections() {
         try {
             while (stillWaiting.get()) {
-                System.out.println("Waiting for connections");
-                selector.select();
-                if (selector.selectNow() == 0) continue;
-                Iterator<SelectionKey> iter = selector.selectedKeys().iterator();
-                while (iter.hasNext()) {
-                    SelectionKey key = iter.next();
-                    if (key.isAcceptable()) {
-                        this.threadPoolManager.addTask(new REGISTER_CLIENT(selector, (SocketChannel) key.channel(),
-                                this));
-                    } else if (key.isReadable()) {
-                        this.threadPoolManager.addTask(new HANDLE_TRAFFIC(key, this));
-                    } else {
-                        System.out.println("Key is not readable or acceptable");
+                if (selector.selectNow() == 0)
+                    continue;
+                Set<SelectionKey> keys = selector.selectedKeys();
+                Iterator<SelectionKey> iterator = keys.iterator();
+                while(iterator.hasNext()) {
+                    SelectionKey key = iterator.next();
+                    if (key.isValid() == false){
+                        continue;
                     }
+                    if (key.isAcceptable()) {
+                        SocketChannel clientSocket = serverSocket.accept();
+                        this.threadPoolManager.addTask(new REGISTER_CLIENT(this.selector, clientSocket, key, this));
+                    } if (key.isReadable()) {
+                        this.threadPoolManager.addTask(new HANDLE_TRAFFIC(key, this));
+                    }
+                    iterator.remove();
                 }
-                iter.remove();
+                keys.clear();
             }
         } catch (IOException e) {
             //Not sure if an IOException in this loop leaves the program in a bad state.

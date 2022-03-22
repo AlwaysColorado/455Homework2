@@ -27,10 +27,10 @@ public class Hashing{
         // build a string with the hash
         StringBuilder hashMessage = new StringBuilder(hashInt.toString(16)); 
         // pad with leading zeros
-            while (hashMessage.length() < 32) 
-            { 
-                hashMessage.insert(0, '0'); 
-            } 
+        while (hashMessage.length() < 40)
+        {
+            hashMessage.insert(0, '0');
+        }
         // return the tostring with padding 
         return hashMessage.toString(); 
 } 

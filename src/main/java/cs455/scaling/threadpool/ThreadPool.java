@@ -80,48 +80,5 @@ public class ThreadPool extends Thread {
     }
 
 
-    private class Worker extends Thread{
-        private AtomicBoolean isAvailable = new AtomicBoolean(false);
-        private AtomicBoolean running = new AtomicBoolean(false);
-        private LinkedBlockingQueue<Task> taskList;
 
-        public Worker() {
-            taskList = new LinkedBlockingQueue<>();
-        }
-        private void killIndividualThread(){
-            running.set(false);
-        }
-
-        public void addTaskList(LinkedBlockingQueue<Task> tl){
-            synchronized (taskList) {
-                this.taskList = tl;
-                this.taskList.notify();
-            }
-        }
-
-        public void run(){
-            running.set(true);
-            while(running.get()){
-                isAvailable.set(false);
-                synchronized (taskList) {
-                    while (taskList.size() == 0) {
-                        try {
-                            isAvailable.set(true);
-                            taskList.wait();
-
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-                Task task = taskList.poll();
-                assert task != null;
-                System.out.println("Worker Thread: Thread starting");
-                task.executeTask(); // run the task
-                System.out.println("Worker Thread: Worker has finished a task"); // message for testing can be removed later
-            }
-
-        }
-
-    }
 }
