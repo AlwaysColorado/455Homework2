@@ -24,7 +24,7 @@ public class ServerStatistics extends TimerTask {
         double sdPerClientThroughput = getStdDevPerClientThroughput(clientStatistics, meanPerClientThroughput, activeClientConnections); // Standard Deviation of the per client throughput
 
         // TODO: Format floating point numbers to limit length
-        System.out.printf(\n"[%s] Server Throughput: %f messages/s, Active Client Connections: %d, " +
+        System.out.printf("\n[%s] Server Throughput: %f messages/s, Active Client Connections: %d, " +
                         "Mean Per-Client Throughput: %f messages/s, Std. Dev. Of Per-Client Throughput: %f messages/s\n",
                 date, throughput, activeClientConnections, meanPerClientThroughput, sdPerClientThroughput);
     }
