@@ -173,7 +173,7 @@ public class Client {
             return true;
         }
         else{
-            System.out.println("\tHash not found" + message);
+            System.out.println("\tHash not found --> " + message);
             return false;
         }
     }
