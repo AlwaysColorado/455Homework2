@@ -37,10 +37,15 @@ public class HANDLE_TRAFFIC extends Task{
         try {
             //save the client's address beforehand just in case it bugs out and we need to deregister it.
             clientAddress = clientSocket.getRemoteAddress();
-            //read 8kb packets from the channel until end of stream (-1 gets returned)
+            //read 8kb packets from the channel
             while(readBuffer.hasRemaining() && bytesRead != -1) {
                 bytesRead = clientSocket.read(readBuffer);
-                //nothing read, stop.
+            }
+            //handle closed socket
+            if(bytesRead == -1){
+                clientSocket.close();
+                parent.deregisterClient(clientAddress);
+                return;
             }
             //Take the byte[] from the packet, get the hash.
             // The packet itself is completely worthless, so we don't need to save it.
@@ -61,6 +66,11 @@ public class HANDLE_TRAFFIC extends Task{
             //This most likely means either the client died or the read/write failed.
             // if the client isn't in the cloud anymore, discard it from the Hashtable.
             parent.deregisterClient(clientAddress);
+            try{
+                clientSocket.close();
+            } catch (IOException ex) {
+                //do nothing, because there's nothing we can do if this fails.
+            }
             //e.printStackTrace();
         }
     }
