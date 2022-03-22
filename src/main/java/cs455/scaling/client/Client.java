@@ -104,6 +104,7 @@ public class Client {
             }
             writeBuffer.clear();
             incrementSent();
+        
         }catch (IOException e) {
             e.printStackTrace();
             clientSocket.close();
@@ -161,6 +162,7 @@ public class Client {
         synchronized (hashed_list) {
             hashed_list.add(hashed_message);
         }
+        System.out.println("\tHASHED FROM CLIENT: " + hashed_message);
    }
 
     private boolean checkAndDeleteHash(String message){

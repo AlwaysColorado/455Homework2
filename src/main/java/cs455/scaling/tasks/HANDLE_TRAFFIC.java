@@ -44,7 +44,6 @@ public class HANDLE_TRAFFIC extends Task{
             }
             //Take the byte[] from the packet, get the hash.
             // The packet itself is completely worthless, so we don't need to save it.
-            System.out.println("\tBYTES READ: " + readBuffer.array().length);
             String hash = hasher.SHA1FromBytes(readBuffer.array());
             //get the hash's bytes, and length in bytes.
             byte[] hashBytes = hash.getBytes();
