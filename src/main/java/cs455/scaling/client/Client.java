@@ -131,7 +131,7 @@ public class Client {
                 }
                 else{
                     // error checking message
-                    System.out.println("Receiving a hash from server that is not in the LinkedList");
+                    System.out.println("\tReceiving a hash from server that is not in the LinkedList");
                 }
                 readBuffer.clear();
             } catch (IOException e) {
