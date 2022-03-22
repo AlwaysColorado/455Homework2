@@ -44,8 +44,8 @@ public class Client {
         totalSent = 0;
         totalReceived = 0;
 
-        // CLIENT TIMER:  5 minutes in milliseconds
-        long clientTimeoutDuration = 300000;
+        // CLIENT TIMER:  10 minutes in milliseconds
+        long clientTimeoutDuration = 600000;
         ClientTimer clientTimer = new ClientTimer(clientTimeoutDuration);
         clientTimer.start();
 
