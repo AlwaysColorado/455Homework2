@@ -162,7 +162,7 @@ public class Client {
         synchronized (hashed_list) {
             hashed_list.add(hashed_message);
         }
-        System.out.println("\tHASHED FROM CLIENT: " + hashed_message);
+        System.out.println("HASHED AT CLIENT: " + hashed_message);
    }
 
     private boolean checkAndDeleteHash(String message){
@@ -173,7 +173,7 @@ public class Client {
             return true;
         }
         else{
-            System.out.println("Hash not found" + message);
+            System.out.println("\tHash not found" + message);
             return false;
         }
     }

@@ -52,7 +52,7 @@ public class HANDLE_TRAFFIC extends Task{
             int bytesWritten = 0;
             while(writeBuffer.hasRemaining() && bytesWritten != -1)
                 bytesWritten = clientSocket.write(writeBuffer);
-            System.out.println("\tBYTES WRITTEN: " + clientAddress + " / " + hash + " / " + bytesWritten);
+            System.out.println("\tTRAFFIC_HANDLED: " + clientAddress + " / " + hash);
             readBuffer.clear();
             writeBuffer.clear();
             //after we've read everything off the stream, let the server know how many messages we got.
