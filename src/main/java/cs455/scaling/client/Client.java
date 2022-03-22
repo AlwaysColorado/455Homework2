@@ -40,7 +40,6 @@ public class Client {
         } catch (IOException e) {
             System.out.println("ClientSocket will not open");
         }
-        System.out.println(clientSocket);
 
         totalSent = 0;
         totalReceived = 0;
@@ -148,7 +147,6 @@ public class Client {
             return true;
         }
         else{
-            System.out.println("Hash not found" + message);
             return false;
         }
     }

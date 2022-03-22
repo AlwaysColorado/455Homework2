@@ -43,7 +43,6 @@ public class ServerStatistics extends TimerTask {
         if (clients == 0) {
             return 0.0;
         }
-        System.out.println(clientStatistics);
         // else...
         double totalMsgCount = 0.0;
         for (Integer count : clientStatistics.values()) {
