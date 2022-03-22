@@ -17,6 +17,6 @@ public class ClientPrintTimer extends TimerTask {
         long sent = client.getTotalSent();
         long received = client.getTotalReceived();
 
-        System.out.printf("[%s] Total Sent Count: %d, Total Received Count: %d", date, sent, received);
+        System.out.printf("[%s] Total Sent Count: %d, Total Received Count: %d\n", date, sent, received);
     }
 }
