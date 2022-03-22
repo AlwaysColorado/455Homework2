@@ -12,7 +12,7 @@ public class ThreadPoolManager extends Thread{
     private final int batchSize;
     private final long batchTime;
     private long startTime;
-    private AtomicBoolean tasksToAdd; // Server can set to false to exit run() while loop
+    private final AtomicBoolean tasksToAdd; // Server can set to false to exit run() while loop
 
     public ThreadPoolManager (int threadPoolSize, int bs, long bt) {
 

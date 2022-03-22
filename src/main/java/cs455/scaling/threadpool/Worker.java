@@ -8,7 +8,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class Worker extends Thread{
     public AtomicBoolean isAvailable = new AtomicBoolean(false);
     public AtomicBoolean running = new AtomicBoolean(false);
-    private LinkedBlockingQueue<Task> taskList;
+    private final LinkedBlockingQueue<Task> taskList;
 
     public Worker() {
         this.taskList = new LinkedBlockingQueue<>();

@@ -18,7 +18,6 @@ public class Client {
     private final int serverPort, messageRate;
     private static SocketChannel clientSocket;
     private final Hashing hashingDevice = new Hashing();
-    private static ByteBuffer buffer;
     private long totalSent;
     private long totalReceived;
     Timer timerForPrint;
@@ -41,7 +40,6 @@ public class Client {
         } catch (IOException e) {
             System.out.println("ClientSocket will not open");
         }
-        System.out.println(clientSocket);
 
         totalSent = 0;
         totalReceived = 0;
@@ -64,34 +62,6 @@ public class Client {
 
     }
 
-    //TODO: this method probably needs to be refactored.
-    // (read isn't blocking in this context considering the ThreadPool.)
-    // Maybe handle reads and writes separately?
-//    private void sendMessageAndCheckResponse() throws IOException {
-//        byte[] message = generateRandomByteMessage();
-//        //save for read allocate
-//        String hashedMessage =  hashRandomByteMessages(message); // add it to the list (hashed)
-//        writeBuffer.put(message); // add it to buffer
-//        //try to dynamically allocate the SHA1 hash response length.
-//        ByteBuffer readBuffer = ByteBuffer.allocate(hashedMessage.getBytes().length);
-//        try{
-//            clientSocket.write(writeBuffer);
-//            writeBuffer.clear();
-//            incrementSent();
-//            clientSocket.read(readBuffer);
-//            String hash_response = new String(readBuffer.array()).trim();
-//            boolean hashInTable = checkAndDeleteHash(hash_response);
-//            // probably need to handle if hashInTable is false
-//            if (hashInTable){
-//                inrcementReceived();
-//                readBuffer.clear();
-//            }
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//            clientSocket.close();
-//        }
-//    }
-
     public void sendMessages() throws IOException {
         ByteBuffer writeBuffer = ByteBuffer.wrap(generateRandomByteMessage());
         hashRandomByteMessages(writeBuffer.array()); // add it to the list (hashed)
@@ -112,7 +82,6 @@ public class Client {
     }
 
     private void checkMessages() {
-        hashRandomByteMessages(generateRandomByteMessage());
         ByteBuffer readBuffer = ByteBuffer.allocate(40);
         while(true){
             int bytesRead = 0;
@@ -122,6 +91,11 @@ public class Client {
             try{
                 while(readBuffer.hasRemaining() && bytesRead != -1)
                     bytesRead = clientSocket.read(readBuffer);
+                if(bytesRead == -1){
+                    //-1 means that the channel is closed. close the socket.
+                    clientSocket.close();
+                    return;
+                }
                 String hash_response = new String(readBuffer.array()).trim(); // not sure if trim is needed
                 boolean hashInTable = checkAndDeleteHash(hash_response);
                 // probably need to handle if hashInTable is false
@@ -134,7 +108,9 @@ public class Client {
                 }
                 readBuffer.clear();
             } catch (IOException e) {
-                e.printStackTrace();
+                //if .read fails, the server is likely dead. kill this client.
+                System.out.println("Lost connection to the Server. Exiting.");
+                System.exit(0);
             }
         }
     }
@@ -171,7 +147,6 @@ public class Client {
             return true;
         }
         else{
-            System.out.println("Hash not found" + message);
             return false;
         }
     }
