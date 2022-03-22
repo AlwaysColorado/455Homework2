@@ -20,16 +20,29 @@ public class HANDLE_TRAFFIC extends Task{
         super(TaskType.HANDLE_TRAFFIC);
         this.key = key;
         this.parent = parent;
-        if(key.attachment() == null){
-            key.attach(new Buffers());
-        }
+        key.attach(new Buffers());
     }
 
     @Override
     public void executeTask(){
         //Get the client's SocketChannel
         SocketChannel clientSocket = (SocketChannel) key.channel();
-        Buffers buffers = (Buffers) key.attachment();
+        Buffers buffers;
+        if(key.attachment() == null) {
+            synchronized (key) {
+                try {
+                    key.wait();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        else {
+            synchronized (key){
+                key.notifyAll();
+            }
+        }
+        buffers = (Buffers) key.attachment();
         //we have to null-check here, unfortunately. reading the address causes an IOException if the connection
         // has problems, but the Server still needs the address if it fails to read...
         SocketAddress clientAddress = null;
