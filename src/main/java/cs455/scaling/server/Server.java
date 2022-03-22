@@ -75,7 +75,6 @@ public class Server {
                     }
                     iterator.remove();
                 }
-                keys.clear();
             }
         } catch (IOException e) {
             //Not sure if an IOException in this loop leaves the program in a bad state.
