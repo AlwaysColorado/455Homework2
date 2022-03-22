@@ -20,7 +20,8 @@ public class HANDLE_TRAFFIC extends Task{
         super(TaskType.HANDLE_TRAFFIC);
         this.key = key;
         this.parent = parent;
-        key.attach(new Buffers());
+        if(key.attachment() == null)
+            key.attach(new Buffers());
     }
 
     @Override
