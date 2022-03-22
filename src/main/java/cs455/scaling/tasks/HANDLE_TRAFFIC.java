@@ -34,7 +34,6 @@ public class HANDLE_TRAFFIC extends Task{
         SocketAddress clientAddress = null;
         //read bytes from the channel into the buffer
         int bytesRead = 0;
-        int totalMessagesRead = 0;
         try {
             //save the client's address beforehand just in case it bugs out and we need to deregister it.
             clientAddress = clientSocket.getRemoteAddress();
@@ -55,10 +54,9 @@ public class HANDLE_TRAFFIC extends Task{
                 bytesWritten = clientSocket.write(writeBuffer);
             readBuffer.clear();
             writeBuffer.clear();
-            totalMessagesRead++;
             //after we've read everything off the stream, let the server know how many messages we got.
-            parent.incrementClientMsgCount(clientAddress, totalMessagesRead);
-            parent.selector.wakeup(); //poke the selector again? idk.
+            parent.incrementClientMsgCount(clientAddress);
+            //parent.selector.wakeup(); //poke the selector again? idk.
         } catch (IOException e) {
             //This most likely means either the client died or the read/write failed.
             // if the client isn't in the cloud anymore, discard it from the Hashtable.

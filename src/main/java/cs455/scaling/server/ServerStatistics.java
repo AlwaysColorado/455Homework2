@@ -43,13 +43,13 @@ public class ServerStatistics extends TimerTask {
         if (clients == 0) {
             return 0.0;
         }
-
+        System.out.println(clientStatistics);
         // else...
         double totalMsgCount = 0.0;
         for (Integer count : clientStatistics.values()) {
             totalMsgCount += count;
         }
-        return (totalMsgCount / clients);
+        return (totalMsgCount / clients) / 20;
 
     }
 
@@ -62,7 +62,7 @@ public class ServerStatistics extends TimerTask {
         // else...
         double stdDev = 0.0;
         for (Integer count : clientStatistics.values()) {
-            stdDev += Math.pow(count - mean, 2);
+            stdDev += Math.pow((count/20F) - mean, 2);
         }
         return Math.sqrt( stdDev / clients);
     }
