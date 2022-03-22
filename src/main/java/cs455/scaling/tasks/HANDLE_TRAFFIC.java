@@ -44,6 +44,7 @@ public class HANDLE_TRAFFIC extends Task{
             }
             //Take the byte[] from the packet, get the hash.
             // The packet itself is completely worthless, so we don't need to save it.
+            System.out.println("\tBYTES READ: " + readBuffer.array().length);
             String hash = hasher.SHA1FromBytes(readBuffer.array());
             //get the hash's bytes, and length in bytes.
             byte[] hashBytes = hash.getBytes();
@@ -52,6 +53,7 @@ public class HANDLE_TRAFFIC extends Task{
             int bytesWritten = 0;
             while(writeBuffer.hasRemaining() && bytesWritten != -1)
                 bytesWritten = clientSocket.write(writeBuffer);
+            System.out.println("\tBYTES WRITTEN: " + clientAddress + " / " + hash + " / " + bytesWritten);
             readBuffer.clear();
             writeBuffer.clear();
             //after we've read everything off the stream, let the server know how many messages we got.

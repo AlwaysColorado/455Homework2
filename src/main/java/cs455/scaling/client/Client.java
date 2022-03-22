@@ -112,7 +112,7 @@ public class Client {
     }
 
     private void checkMessages() {
-        hashRandomByteMessages(generateRandomByteMessage());
+        // hashRandomByteMessages(generateRandomByteMessage());
         ByteBuffer readBuffer = ByteBuffer.allocate(40);
         while(true){
             int bytesRead = 0;
