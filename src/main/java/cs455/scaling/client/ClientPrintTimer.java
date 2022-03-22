@@ -17,6 +17,7 @@ public class ClientPrintTimer extends TimerTask {
         long sent = client.getTotalSent();
         long received = client.getTotalReceived();
 
-        System.out.printf("\n[%s] Total Sent Count: %d, Total Received Count: %d \n\n", date, sent, received);
+        System.out.printf("\n[%s] Total Sent Count: %d, Total Received Count: %d \n", date, sent, received);
+        System.out.println("IN QUEUE: " + client.getNumHashesInQueue() + "\n");
     }
 }

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
+import java.nio.channels.ShutdownChannelGroupException;
 import java.nio.channels.SocketChannel;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -46,8 +47,9 @@ public class Client {
         totalSent = 0;
         totalReceived = 0;
 
-        // CLIENT TIMER:  5 minutes in milliseconds
-        long clientTimeoutDuration = 300000;
+        // CLIENT TIMER:  
+        // long clientTimeoutDuration = 300000; // 5 minutes in milliseconds
+        long clientTimeoutDuration = 600000; // 10 minutes in milliseconds
         ClientTimer clientTimer = new ClientTimer(clientTimeoutDuration);
         clientTimer.start();
 
@@ -131,7 +133,7 @@ public class Client {
                 }
                 else{
                     // error checking message
-                    System.out.println("\tReceiving a hash from server that is not in the LinkedList");
+                    // System.out.println("\tReceiving a hash from server that is not in the LinkedList");
                 }
                 readBuffer.clear();
             } catch (IOException e) {
@@ -188,6 +190,10 @@ public class Client {
         long received = totalReceived;
         totalReceived = 0;
         return received;
+    }
+
+    public synchronized int getNumHashesInQueue() {
+        return hashed_list.size();
     }
 
     public static void main(String[] args) {
