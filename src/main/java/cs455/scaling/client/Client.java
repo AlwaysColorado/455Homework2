@@ -64,34 +64,6 @@ public class Client {
 
     }
 
-    //TODO: this method probably needs to be refactored.
-    // (read isn't blocking in this context considering the ThreadPool.)
-    // Maybe handle reads and writes separately?
-//    private void sendMessageAndCheckResponse() throws IOException {
-//        byte[] message = generateRandomByteMessage();
-//        //save for read allocate
-//        String hashedMessage =  hashRandomByteMessages(message); // add it to the list (hashed)
-//        writeBuffer.put(message); // add it to buffer
-//        //try to dynamically allocate the SHA1 hash response length.
-//        ByteBuffer readBuffer = ByteBuffer.allocate(hashedMessage.getBytes().length);
-//        try{
-//            clientSocket.write(writeBuffer);
-//            writeBuffer.clear();
-//            incrementSent();
-//            clientSocket.read(readBuffer);
-//            String hash_response = new String(readBuffer.array()).trim();
-//            boolean hashInTable = checkAndDeleteHash(hash_response);
-//            // probably need to handle if hashInTable is false
-//            if (hashInTable){
-//                inrcementReceived();
-//                readBuffer.clear();
-//            }
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//            clientSocket.close();
-//        }
-//    }
-
     public void sendMessages() throws IOException {
         ByteBuffer writeBuffer = ByteBuffer.wrap(generateRandomByteMessage());
         hashRandomByteMessages(writeBuffer.array()); // add it to the list (hashed)

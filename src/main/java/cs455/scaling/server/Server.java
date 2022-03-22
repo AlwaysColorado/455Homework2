@@ -86,62 +86,6 @@ public class Server {
         }
     }
 
-    //depreciated
-    /*
-    private void registerConnection() throws IOException{
-        clientSocket = serverSocket.accept();
-        clientSocket.configureBlocking(false);
-        clientSocket.register(selector, SelectionKey.OP_READ);
-        System.out.println("A new connection has registered");
-    }*/
-
-    //depreciated
-    /*
-    private static void readConnectionMessage(SelectionKey key) throws IOException {
-        ByteBuffer readBuffer = ByteBuffer.allocate(256); // allocate buffer size 
-        SocketChannel clientSocketR = (SocketChannel) key.channel(); // get the channel key
-        int bytesReadSoFar = clientSocketR.read(readBuffer); // number of bytes read / reading from it
-
-        if (bytesReadSoFar == -1) {
-            clientSocketR.close(); // deals with error and closes the clientSocket
-            System.out.println("Closing clientSocket"); // message
-        } else {
-            String message = new String(readBuffer.array());
-            byte[] packet = message.getBytes();
-            // add hashed_bytes to batches
-            batches = new ArrayList<>(1);
-            batches.add(packet);
-            readBuffer.clear();
-        }
-    }*/
-
-    //depreciated
-    /*
-    private static void writeConnectionMessage(SelectionKey key, List<byte[]> batches, int batchSize) throws IOException {
-        ByteBuffer writeBuffer = ByteBuffer.allocate(256); // allocate buffer size
-        SocketChannel clientSocketW = (SocketChannel) key.channel(); // get the channel key
-        List<byte[]> batch = splitIntoBatches(batches, batchSize);
-        for (int i=0; i<batchSize; i++) {
-            String hashed_message = hashDevice.SHA1FromBytes(batch.get(i));
-            byte[] hashed_bytes = hashed_message.getBytes();
-            writeBuffer.put(hashed_bytes);
-            clientSocketW.write(writeBuffer);
-            writeBuffer.clear();
-        }
-    }*/
-
-    //depreciated
-    /*
-    private static List<byte[]> splitIntoBatches(List<byte[]> batches, int batchSize){
-        List<byte[]> batch = new ArrayList<>(batchSize);
-        if (batches.size() == batchSize){
-            for (int i=0; i<batchSize; i++){
-                batch.set(i, batches.get(i));
-            }
-        }
-        return batch;
-    }*/
-
     public void incrementClientMsgCount(SocketAddress clientAddress) {
         //update the client's message count with supplied
         int current = clientStatistics.get(clientAddress);
