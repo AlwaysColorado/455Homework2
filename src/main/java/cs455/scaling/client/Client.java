@@ -112,7 +112,6 @@ public class Client {
     }
 
     private void checkMessages() {
-        hashRandomByteMessages(generateRandomByteMessage());
         ByteBuffer readBuffer = ByteBuffer.allocate(40);
         while(true){
             int bytesRead = 0;
@@ -122,6 +121,11 @@ public class Client {
             try{
                 while(readBuffer.hasRemaining() && bytesRead != -1)
                     bytesRead = clientSocket.read(readBuffer);
+                if(bytesRead == -1){
+                    //-1 means that the channel is closed. close the socket.
+                    clientSocket.close();
+                    return;
+                }
                 String hash_response = new String(readBuffer.array()).trim(); // not sure if trim is needed
                 boolean hashInTable = checkAndDeleteHash(hash_response);
                 // probably need to handle if hashInTable is false
@@ -134,7 +138,9 @@ public class Client {
                 }
                 readBuffer.clear();
             } catch (IOException e) {
-                e.printStackTrace();
+                //if .read fails, the server is likely dead. kill this client.
+                System.out.println("Lost connection to the Server. Exiting.");
+                System.exit(0);
             }
         }
     }
