@@ -69,7 +69,7 @@ public class Server {
                     }
                     if (key.isAcceptable()) {
                         SocketChannel clientSocket = serverSocket.accept();
-                        this.threadPoolManager.addTask(new REGISTER_CLIENT(clientSocket, key, this));
+                        this.threadPoolManager.addTask(new REGISTER_CLIENT(clientSocket, this));
                     } if (key.isReadable()) {
                         this.threadPoolManager.addTask(new HANDLE_TRAFFIC(key, this));
                     }
@@ -148,8 +148,4 @@ public class Server {
         Server server = new Server(pn, bs, bt, tps);
         server.runServer();
     }
-
-
-
-
 }

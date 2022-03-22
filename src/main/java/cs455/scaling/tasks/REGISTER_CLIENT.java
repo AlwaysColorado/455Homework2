@@ -12,7 +12,7 @@ public class REGISTER_CLIENT extends Task{
     private final SocketChannel clientSocket;
     private final Server parent;
 
-    public REGISTER_CLIENT(SocketChannel clientSocket, SelectionKey key, Server parent) {
+    public REGISTER_CLIENT(SocketChannel clientSocket, Server parent) {
         super(TaskType.REGISTER_CLIENT);
         this.clientSocket = clientSocket;
         this.parent = parent;
