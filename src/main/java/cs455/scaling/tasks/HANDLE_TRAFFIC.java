@@ -61,7 +61,7 @@ public class HANDLE_TRAFFIC extends Task{
             //This most likely means either the client died or the read/write failed.
             // if the client isn't in the cloud anymore, discard it from the Hashtable.
             parent.deregisterClient(clientAddress);
-            e.printStackTrace();
+            //e.printStackTrace();
         }
     }
 }
