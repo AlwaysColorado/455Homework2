@@ -9,6 +9,8 @@ import java.util.*;
 import cs455.scaling.tasks.HANDLE_TRAFFIC;
 import cs455.scaling.tasks.REGISTER_CLIENT;
 import cs455.scaling.threadpool.ThreadPoolManager;
+import cs455.scaling.util.Buffers;
+
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Server {
@@ -67,7 +69,7 @@ public class Server {
                     }
                     if (key.isAcceptable()) {
                         SocketChannel clientSocket = serverSocket.accept();
-                        this.threadPoolManager.addTask(new REGISTER_CLIENT(clientSocket, this));
+                        this.threadPoolManager.addTask(new REGISTER_CLIENT(clientSocket, key, this));
                     } if (key.isReadable()) {
                         this.threadPoolManager.addTask(new HANDLE_TRAFFIC(key, this));
                     }
