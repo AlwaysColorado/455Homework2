@@ -18,7 +18,6 @@ public class Client {
     private final int serverPort, messageRate;
     private static SocketChannel clientSocket;
     private final Hashing hashingDevice = new Hashing();
-    private static ByteBuffer buffer;
     private long totalSent;
     private long totalReceived;
     Timer timerForPrint;

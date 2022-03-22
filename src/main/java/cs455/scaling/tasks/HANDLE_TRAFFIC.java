@@ -61,7 +61,6 @@ public class HANDLE_TRAFFIC extends Task{
             writeBuffer.clear();
             //after we've read everything off the stream, let the server know how many messages we got.
             parent.incrementClientMsgCount(clientAddress);
-            //parent.selector.wakeup(); //poke the selector again? idk.
         } catch (IOException e) {
             //This most likely means either the client died or the read/write failed.
             // if the client isn't in the cloud anymore, discard it from the Hashtable.

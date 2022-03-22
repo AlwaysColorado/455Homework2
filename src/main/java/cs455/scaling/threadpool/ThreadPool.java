@@ -8,9 +8,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ThreadPool extends Thread {
-    // instantiate blockingQueue
-    private LinkedBlockingQueue<Task> taskList;
-    private final AtomicBoolean isKillThreads = new AtomicBoolean(false);
     private final Queue<LinkedBlockingQueue<Task>> batchList = new LinkedList<>();
     private final AtomicBoolean pullTaskList = new AtomicBoolean(false);
     private final int tps;
@@ -41,7 +38,8 @@ public class ThreadPool extends Thread {
                 // task list is a batch which contains tasks
                 // polls a batch
                 // taskList size is 1
-                taskList = batchList.poll();
+                // instantiate blockingQueue
+                LinkedBlockingQueue<Task> taskList = batchList.poll();
                 workerHelper(taskList);
 
             }
@@ -75,9 +73,6 @@ public class ThreadPool extends Thread {
         }
     }
 
-    public void killThreads(){
-        isKillThreads.set(true);
-    }
 
 
 

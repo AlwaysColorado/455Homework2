@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class Server {
 
     private ServerSocketChannel serverSocket;
-    private AtomicBoolean stillWaiting = new AtomicBoolean(true);
+    private final AtomicBoolean stillWaiting = new AtomicBoolean(true);
     public Selector selector;
     private final int portNum;
     private final Hashtable<SocketAddress, Integer> clientStatistics;
@@ -62,12 +62,12 @@ public class Server {
                 Iterator<SelectionKey> iterator = keys.iterator();
                 while(iterator.hasNext()) {
                     SelectionKey key = iterator.next();
-                    if (key.isValid() == false){
+                    if (!key.isValid()){
                         continue;
                     }
                     if (key.isAcceptable()) {
                         SocketChannel clientSocket = serverSocket.accept();
-                        this.threadPoolManager.addTask(new REGISTER_CLIENT(this.selector, clientSocket, key, this));
+                        this.threadPoolManager.addTask(new REGISTER_CLIENT(clientSocket, this));
                     } if (key.isReadable()) {
                         this.threadPoolManager.addTask(new HANDLE_TRAFFIC(key, this));
                     }
