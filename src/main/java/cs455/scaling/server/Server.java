@@ -157,15 +157,14 @@ public class Server {
         // don't do anything. (I don't really know how to get around this problem...)
         if(clientAddress == null)
             return;
+        //remove the address from the table, if it exists
         clientStatistics.remove(clientAddress);
     }
 
     public Hashtable<SocketAddress, Integer> getClientStatistics(){
         Hashtable<SocketAddress, Integer> cStats;
-        synchronized (clientStatistics) {
-            cStats = new Hashtable<>(clientStatistics); // deep copy
-            clientStatistics.replaceAll((key, value) -> 0);  // This *SHOULD* replace all values with zero??
-        }
+        cStats = new Hashtable<>(clientStatistics); // deep copy
+        clientStatistics.replaceAll((key, value) -> 0);  // This *SHOULD* replace all values with zero??
         return cStats;
     }
 
