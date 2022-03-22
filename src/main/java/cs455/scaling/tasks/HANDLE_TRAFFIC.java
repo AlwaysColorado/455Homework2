@@ -2,6 +2,7 @@ package cs455.scaling.tasks;
 
 import cs455.scaling.server.Server;
 import cs455.scaling.util.Hashing;
+import cs455.scaling.util.Buffers;
 
 import java.io.IOException;
 import java.net.SocketAddress;
@@ -19,16 +20,16 @@ public class HANDLE_TRAFFIC extends Task{
         super(TaskType.HANDLE_TRAFFIC);
         this.key = key;
         this.parent = parent;
+        if(key.attachment() == null){
+            key.attach(new Buffers());
+        }
     }
 
     @Override
     public void executeTask(){
-        //First, we need a buffer to read data. The client will be sending a packet that's 8196 bytes.
-        // will one key read multiple such messages?
-        ByteBuffer readBuffer = ByteBuffer.allocate(8196);
         //Get the client's SocketChannel
         SocketChannel clientSocket = (SocketChannel) key.channel();
-
+        Buffers buffers = (Buffers) key.attachment();
         //we have to null-check here, unfortunately. reading the address causes an IOException if the connection
         // has problems, but the Server still needs the address if it fails to read...
         SocketAddress clientAddress = null;
@@ -37,9 +38,14 @@ public class HANDLE_TRAFFIC extends Task{
         try {
             //save the client's address beforehand just in case it bugs out and we need to deregister it.
             clientAddress = clientSocket.getRemoteAddress();
+            String hash;
             //read 8kb packets from the channel
-            while(readBuffer.hasRemaining() && bytesRead != -1) {
-                bytesRead = clientSocket.read(readBuffer);
+            synchronized (buffers.readBuffer) {
+                while (buffers.readBuffer.hasRemaining() && bytesRead != -1) {
+                    bytesRead = clientSocket.read(buffers.readBuffer);
+                }
+                hash = hasher.SHA1FromBytes(buffers.readBuffer.array());
+                buffers.readBuffer.clear();
             }
             //handle closed socket
             if(bytesRead == -1){
@@ -49,16 +55,17 @@ public class HANDLE_TRAFFIC extends Task{
             }
             //Take the byte[] from the packet, get the hash.
             // The packet itself is completely worthless, so we don't need to save it.
-            String hash = hasher.SHA1FromBytes(readBuffer.array());
             //get the hash's bytes, and length in bytes.
             byte[] hashBytes = hash.getBytes();
-            //send it back to the client.
-            ByteBuffer writeBuffer = ByteBuffer.wrap(hashBytes);
             int bytesWritten = 0;
-            while(writeBuffer.hasRemaining() && bytesWritten != -1)
-                bytesWritten = clientSocket.write(writeBuffer);
-            readBuffer.clear();
-            writeBuffer.clear();
+            //send it back to the client.
+            synchronized (buffers.writeBuffer) {
+                buffers.writeBuffer.put(hashBytes);
+                buffers.writeBuffer.flip();
+                while (buffers.writeBuffer.hasRemaining() && bytesWritten != -1)
+                    bytesWritten = clientSocket.write(buffers.writeBuffer);
+                buffers.writeBuffer.clear();
+            }
             //after we've read everything off the stream, let the server know how many messages we got.
             parent.incrementClientMsgCount(clientAddress);
         } catch (IOException e) {
