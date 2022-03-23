@@ -25,7 +25,7 @@ NODE_HOSTS="tallahassee.cs.colostate.edu springfield.cs.colostate.edu santa-fe.c
              providence.cs.colostate.edu pili.cs.colostate.edu pierre.cs.colostate.edu phoenix.cs.colostate.edu olympia.cs.colostate.edu 
              oklahoma-city.cs.colostate.edu nashville.cs.colostate.edu montpelier.cs.colostate.edu montgomery.cs.colostate.edu raleigh.cs.colostate.edu 
              richmond.cs.colostate.edu sacramento.cs.colostate.edu venus.cs.colostate.edu topeka.cs.colostate.edu trenton.cs.colostate.edu 
-             tallahassee.cs.colostate.edu springfield.cs.colostate.edu santa-fe.cs.colostate.edu salt-lake-city.cs.colostate.edu salem.cs.colostate.edu""
+             tallahassee.cs.colostate.edu springfield.cs.colostate.edu santa-fe.cs.colostate.edu salt-lake-city.cs.colostate.edu salem.cs.colostate.edu"
 
 
 # the port and ip of the registry
