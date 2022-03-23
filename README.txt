@@ -25,7 +25,7 @@ The clients will terminate execution after 10 minutes have passed since startup.
 ====================================
 README.txt                                          | this file.
 build.gradle                                        | gradle file.
-runner.sh                                           | [optional] script to run clients.
+runner.sh                                           | [optional] script to run clients. "bash runner.sh [serverHostName] [serverPort] [messageRate]
 src
 └───main
     └───java
