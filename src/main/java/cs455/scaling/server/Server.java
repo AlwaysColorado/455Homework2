@@ -9,6 +9,8 @@ import java.util.*;
 import cs455.scaling.tasks.HANDLE_TRAFFIC;
 import cs455.scaling.tasks.REGISTER_CLIENT;
 import cs455.scaling.threadpool.ThreadPoolManager;
+import cs455.scaling.util.Buffers;
+
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Server {
@@ -73,7 +75,6 @@ public class Server {
                     }
                     iterator.remove();
                 }
-                keys.clear();
             }
         } catch (IOException e) {
             //Not sure if an IOException in this loop leaves the program in a bad state.
@@ -146,8 +147,4 @@ public class Server {
         Server server = new Server(pn, bs, bt, tps);
         server.runServer();
     }
-
-
-
-
 }
