@@ -14,5 +14,5 @@ dependencies {
 }
 
 jar {
-    archiveName 'team8.jar'
+    archiveName 'Team5-HW2.jar'
 }
